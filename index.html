@@ -1,269 +1,396 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CineSearch</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-
 <style>
-:root{
-    --bg:#0f1014;
-    --accent:#e50914;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif}
-body{background:var(--bg);color:white}
+    :root {
+        --bg: #0b0c10;
+        --surface: #1f2833;
+        --accent: #66fcf1;
+        --accent-dim: #45a29e;
+        --text: #c5c6c7;
+        --white: #ffffff;
+    }
 
-/* NAV */
-nav{
-    position:fixed;top:0;width:100%;
-    display:flex;justify-content:space-between;
-    padding:20px 4%;
-    background:linear-gradient(to bottom,#000,transparent);
-    z-index:1000;
-}
-.logo{font-size:1.6rem;font-weight:800}
-.logo span{color:var(--accent)}
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+    
+    body { 
+        background: var(--bg); 
+        color: var(--text); 
+        overflow-x: hidden; /* Prevent side scrolling strictly */
+        width: 100vw;
+    }
 
-.search{
-    padding:10px 18px;
-    border-radius:25px;
-    border:none;
-    background:rgba(255,255,255,0.08);
-    color:white;
-    width:260px;
-}
+    /* API KEY MODAL */
+    #apiModal {
+        position: fixed; inset: 0;
+        background: rgba(11, 12, 16, 0.9);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex; justify-content: center; align-items: center;
+        transition: opacity 0.3s;
+    }
+    .modal-content {
+        background: var(--surface); padding: 30px;
+        border-radius: 12px; width: 90%; max-width: 400px;
+        text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .modal-content h2 { color: var(--white); margin-bottom: 10px; }
+    .modal-content p { font-size: 0.9rem; margin-bottom: 20px; }
+    .modal-content input {
+        width: 100%; padding: 12px; border-radius: 6px;
+        border: 1px solid var(--accent-dim); background: var(--bg);
+        color: var(--white); outline: none; margin-bottom: 15px;
+    }
+    .modal-content button {
+        width: 100%; padding: 12px; border-radius: 6px;
+        border: none; background: var(--accent); color: var(--bg);
+        font-weight: 800; cursor: pointer; transition: 0.2s;
+    }
+    .modal-content button:hover { background: var(--white); }
+    .error-msg { color: #ff4c4c; font-size: 0.85rem; margin-bottom: 10px; display: none; }
 
-/* HERO */
-.hero{
-    margin-top:80px;
-    height:75vh;
-    background-size:cover;
-    background-position:center;
-    display:flex;
-    align-items:flex-end;
-    padding:60px 4%;
-    position:relative;
-}
-.hero::after{
-    content:'';
-    position:absolute;inset:0;
-    background:linear-gradient(to right,#0f1014 20%,transparent 60%);
-}
-.hero-content{position:relative;max-width:520px}
-.hero h1{font-size:3rem;font-weight:800;margin-bottom:10px}
-.hero p{color:#ccc;margin-bottom:20px}
+    /* NAV */
+    nav {
+        position: fixed; top: 0; left: 0; width: 100%;
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 15px 4%; background: rgba(11, 12, 16, 0.9);
+        backdrop-filter: blur(10px); z-index: 1000;
+    }
+    .logo { font-size: 1.5rem; font-weight: 800; color: var(--white); }
+    .logo span { color: var(--accent); }
+    .search-bar {
+        padding: 10px 16px; border-radius: 30px;
+        border: 1px solid var(--surface); background: rgba(255,255,255,0.05);
+        color: var(--white); width: 100%; max-width: 300px; outline: none;
+        transition: border 0.3s;
+    }
+    .search-bar:focus { border-color: var(--accent); }
 
-/* FILTERS */
-.filters{
-    padding:15px 4%;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-}
-select{
-    padding:8px 12px;
-    background:#1a1c23;
-    color:white;
-    border:none;
-    border-radius:8px;
-}
+    /* HERO */
+    .hero {
+        margin-top: 65px; height: 50vh; min-height: 400px;
+        position: relative; background-size: cover; background-position: top center;
+        display: flex; align-items: flex-end; padding: 40px 4%;
+    }
+    .hero::before {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(to top, var(--bg) 0%, rgba(11,12,16,0.2) 100%);
+    }
+    .hero-content { position: relative; max-width: 600px; z-index: 2; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--white); margin-bottom: 10px; line-height: 1.1; }
+    .hero p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* GRID */
-.grid{
-    padding:10px 4% 80px;
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-    gap:22px;
-}
+    /* FILTERS */
+    .filters {
+        padding: 20px 4%; display: flex; gap: 15px; flex-wrap: wrap;
+        background: var(--bg); position: relative; z-index: 10;
+    }
+    select {
+        padding: 10px 15px; background: var(--surface); color: var(--white);
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+        outline: none; cursor: pointer; font-size: 0.9rem; flex-grow: 1; min-width: 120px;
+    }
+    select:focus { border-color: var(--accent); }
 
-/* CARD */
-.card{
-    position:relative;
-    cursor:pointer;
-    transition:.3s;
-}
-.card img{
-    width:100%;
-    border-radius:14px;
-}
+    /* GRID */
+    .grid {
+        padding: 10px 4% 60px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+    
+    /* CARD */
+    .card {
+        position: relative; cursor: pointer; border-radius: 12px;
+        overflow: hidden; aspect-ratio: 2 / 3; background: var(--surface);
+    }
+    .card img {
+        width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;
+    }
+    .card:hover img { transform: scale(1.08); }
+    .card-info {
+        position: absolute; inset: 0; padding: 15px;
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+        display: flex; flex-direction: column; justify-content: flex-end;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    .card:hover .card-info { opacity: 1; }
+    .card-info h4 { color: var(--white); font-size: 1rem; margin-bottom: 5px; }
+    .card-info span { font-size: 0.8rem; color: var(--accent); font-weight: 600; }
 
-/* HOVER EFFECT */
-.card:hover{
-    transform:scale(1.12);
-    z-index:10;
-}
-.card:hover img{
-    filter:brightness(0.6);
-}
+    /* LOADER */
+    .loader { text-align: center; padding: 30px; color: var(--accent-dim); font-weight: 600; }
 
-/* PREVIEW OVERLAY */
-.card-info{
-    position:absolute;
-    bottom:0;
-    width:100%;
-    padding:12px;
-    background:linear-gradient(transparent,rgba(0,0,0,.9));
-    opacity:0;
-    transition:.3s;
-}
-.card:hover .card-info{opacity:1}
-
-.title{font-size:15px;font-weight:600}
-.rating{font-size:13px;color:#fbbf24}
-
-/* LOADER */
-.loader{text-align:center;padding:20px;color:#aaa}
+    @media(max-width: 600px) {
+        nav { flex-direction: column; gap: 10px; padding-bottom: 15px; }
+        .hero { margin-top: 100px; }
+        .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    }
 </style>
-
 </head>
-
 <body>
 
-<nav>
-<div class="logo">Cine<span>Search</span></div>
-<input id="search" class="search" placeholder="Movies, shows, actors...">
-</nav>
-
-<div id="hero" class="hero">
-<div class="hero-content">
-<h1 id="heroTitle">Loading...</h1>
-<p id="heroDesc"></p>
-</div>
-</div>
-
-<div class="filters">
-<select id="sort">
-<option value="popularity.desc">Popular</option>
-<option value="vote_average.desc">Top Rated</option>
-<option value="primary_release_date.desc">Newest</option>
-</select>
-
-<select id="year">
-<option value="">All Years</option>
-<option>2026</option>
-<option>2025</option>
-<option>2024</option>
-<option>2023</option>
-<option>2022</option>
-</select>
+<!-- API Key Modal -->
+<div id="apiModal" style="display: none;">
+    <div class="modal-content">
+        <h2>Welcome to Cine<span>Search</span></h2>
+        <p>Please enter your TMDB API Key to continue. It will be saved locally in your browser.</p>
+        <p id="apiError" class="error-msg">Invalid API Key. Please try again.</p>
+        <input type="text" id="apiKeyInput" placeholder="Enter TMDB v3 API Key">
+        <button onclick="saveAndVerifyApiKey()">Save & Continue</button>
+    </div>
 </div>
 
-<div id="grid" class="grid"></div>
-<div id="loader" class="loader"></div>
+<!-- Main UI -->
+<div id="mainApp" style="display: none;">
+    <nav>
+        <div class="logo">Cine<span>Search</span></div>
+        <input id="search" class="search-bar" placeholder="Search for movies...">
+    </nav>
+
+    <div id="hero" class="hero">
+        <div class="hero-content">
+            <h1 id="heroTitle">Loading...</h1>
+            <p id="heroDesc"></p>
+        </div>
+    </div>
+
+    <div class="filters">
+        <select id="sort">
+            <option value="popularity.desc">Most Popular</option>
+            <option value="vote_average.desc">Top Rated</option>
+            <option value="primary_release_date.desc">Newest Releases</option>
+            <option value="revenue.desc">Highest Grossing</option>
+        </select>
+        
+        <select id="genre">
+            <option value="">All Genres</option>
+            <!-- Injected via JS -->
+        </select>
+
+        <select id="year">
+            <option value="">All Years</option>
+            <!-- Injected via JS -->
+        </select>
+    </div>
+
+    <div id="grid" class="grid"></div>
+    <div id="loader" class="loader">Scroll for more</div>
+</div>
 
 <script>
-const BASE='https://api.themoviedb.org/3';
-const IMG='https://image.tmdb.org/t/p/w500';
-const HERO_IMG='https://image.tmdb.org/t/p/original';
+const BASE = 'https://api.themoviedb.org/3';
+const IMG = 'https://image.tmdb.org/t/p/w500';
+const HERO_IMG = 'https://image.tmdb.org/t/p/original';
 
-let API_KEY=localStorage.getItem('tmdb_api_key')||prompt("Enter TMDB API Key");
-localStorage.setItem('tmdb_api_key',API_KEY);
+let API_KEY = localStorage.getItem('tmdb_api_key');
 
 // STATE
-let page=1,totalPages=1,isLoading=false;
-let query='',sort='popularity.desc',year='';
+let page = 1, totalPages = 1, isLoading = false;
+let query = '', sort = 'popularity.desc', year = '', genre = '';
 
-// FETCH
-async function fetchData(url){
-    const res=await fetch(BASE+url+(url.includes('?')?'&':'?')+'api_key='+API_KEY);
+// DOM Elements
+const apiModal = document.getElementById('apiModal');
+const mainApp = document.getElementById('mainApp');
+const apiError = document.getElementById('apiError');
+const apiKeyInput = document.getElementById('apiKeyInput');
+
+const grid = document.getElementById('grid');
+const loader = document.getElementById('loader');
+const searchInput = document.getElementById('search');
+const sortSelect = document.getElementById('sort');
+const genreSelect = document.getElementById('genre');
+const yearSelect = document.getElementById('year');
+
+// INITIAL BOOTSTRAP
+if (!API_KEY) {
+    apiModal.style.display = 'flex';
+} else {
+    validateTokenAndStart();
+}
+
+async function saveAndVerifyApiKey() {
+    API_KEY = apiKeyInput.value.trim();
+    if(!API_KEY) return;
+    apiError.style.display = 'none';
+    await validateTokenAndStart();
+}
+
+async function validateTokenAndStart() {
+    try {
+        // Test key with configuration endpoint
+        const res = await fetch(`${BASE}/configuration?api_key=${API_KEY}`);
+        const data = await res.json();
+        
+        if (data.success === false) {
+            localStorage.removeItem('tmdb_api_key');
+            apiModal.style.display = 'flex';
+            mainApp.style.display = 'none';
+            if(apiKeyInput.value) apiError.style.display = 'block';
+        } else {
+            localStorage.setItem('tmdb_api_key', API_KEY);
+            apiModal.style.display = 'none';
+            mainApp.style.display = 'block';
+            initializeUI();
+        }
+    } catch (e) {
+        alert("Network error. Please check your connection.");
+    }
+}
+
+// FETCH WRAPPER
+async function fetchData(url) {
+    const divider = url.includes('?') ? '&' : '?';
+    const res = await fetch(`${BASE}${url}${divider}api_key=${API_KEY}`);
     return await res.json();
 }
 
-// HERO
-function setHero(item){
-    hero.style.backgroundImage=`url(${HERO_IMG+item.backdrop_path})`;
-    heroTitle.textContent=item.title;
-    heroDesc.textContent=item.overview;
+// INITIALIZE APP (Once API Key is confirmed valid)
+async function initializeUI() {
+    populateYears();
+    await populateGenres();
+    
+    const trending = await fetchData('/trending/movie/day');
+    if (trending.results && trending.results.length > 0) {
+        setHero(trending.results[0]);
+    }
+    
+    load();
+    setupObserver();
 }
 
-// INIT
-async function init(){
-    const t=await fetchData('/trending/movie/day');
-    setHero(t.results[0]);
-    load();
+// POPULATE DYNAMIC FILTERS
+function populateYears() {
+    const currentYear = new Date().getFullYear();
+    for(let y = currentYear; y >= 1980; y--) {
+        yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+    }
+}
+
+async function populateGenres() {
+    try {
+        const data = await fetchData('/genre/movie/list');
+        if(data.genres) {
+            data.genres.forEach(g => {
+                genreSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+            });
+        }
+    } catch (e) { console.error("Could not load genres"); }
+}
+
+// HERO
+function setHero(item) {
+    const hero = document.getElementById('hero');
+    const heroTitle = document.getElementById('heroTitle');
+    const heroDesc = document.getElementById('heroDesc');
+    
+    hero.style.backgroundImage = `url(${HERO_IMG + item.backdrop_path})`;
+    heroTitle.textContent = item.title || item.original_title;
+    heroDesc.textContent = item.overview;
 }
 
 // LOAD GRID
-async function load(){
-    if(isLoading || page>totalPages) return;
+async function load() {
+    if (isLoading || page > totalPages) return;
 
-    isLoading=true;
-    loader.textContent='Loading...';
+    isLoading = true;
+    loader.textContent = 'Loading...';
 
     let url;
-
-    if(query){
-        url=`/search/movie?query=${query}&page=${page}`;
-    }else{
-        url=`/discover/movie?sort_by=${sort}&primary_release_year=${year}&page=${page}`;
+    if (query) {
+        url = `/search/movie?query=${encodeURIComponent(query)}&page=${page}`;
+    } else {
+        url = `/discover/movie?sort_by=${sort}&primary_release_year=${year}&with_genres=${genre}&page=${page}`;
     }
 
-    const data=await fetchData(url);
+    const data = await fetchData(url);
+    if (!data.results) return;
 
-    totalPages=data.total_pages;
+    totalPages = data.total_pages;
 
-    data.results.forEach(item=>{
-        if(!item.poster_path) return;
-
-        grid.innerHTML+=`
+    data.results.forEach(item => {
+        if (!item.poster_path) return;
+        const yearRelease = item.release_date ? item.release_date.split('-')[0] : 'N/A';
+        
+        grid.innerHTML += `
         <div class="card">
-            <img src="${IMG+item.poster_path}">
+            <img src="${IMG + item.poster_path}" alt="${item.title}" loading="lazy">
             <div class="card-info">
-                <div class="title">${item.title}</div>
-                <div class="rating">⭐ ${item.vote_average.toFixed(1)}</div>
+                <h4>${item.title}</h4>
+                <span>${yearRelease} • ⭐ ${item.vote_average.toFixed(1)}</span>
             </div>
         </div>`;
     });
 
     page++;
-    isLoading=false;
+    isLoading = false;
 
-    loader.textContent = page>totalPages ? 'No more results' : '';
+    if (page > totalPages) {
+        loader.textContent = data.results.length === 0 && page === 2 ? 'No results found' : 'No more results';
+    } else {
+        loader.textContent = 'Scroll for more';
+    }
 }
 
-// RESET
-function reset(){
-    page=1;
-    totalPages=1;
-    grid.innerHTML='';
+// RESET & RELOAD
+function reset() {
+    page = 1;
+    totalPages = 1;
+    grid.innerHTML = '';
     load();
 }
 
-// SCROLL
-window.addEventListener('scroll',()=>{
-    if(window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200){
-        load();
+// INFINITE SCROLL (Intersection Observer replaces Scroll Listener)
+function setupObserver() {
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+            load();
+        }
+    }, { rootMargin: '200px' });
+    observer.observe(loader);
+}
+
+// SEARCH INPUT EVENT
+searchInput.addEventListener('input', e => {
+    query = e.target.value.trim();
+    
+    // Reset filters visually so the user knows Search overrides Discover rules
+    if(query.length > 0) {
+        sortSelect.value = "popularity.desc"; sort = "popularity.desc";
+        genreSelect.value = ""; genre = "";
+        yearSelect.value = ""; year = "";
+    }
+
+    if (query.length > 2 || query.length === 0) {
+        // Slight debounce for typing
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(reset, 400);
     }
 });
 
-// SEARCH
-search.addEventListener('input',e=>{
-    query=e.target.value.trim();
-
-    if(query.length>2){
-        reset();
-    }else if(query.length===0){
-        reset();
+// FILTER EVENTS
+function handleFilterChange() {
+    // If user changes a filter, clear search text to avoid conflicting rules
+    if (query.length > 0) {
+        query = '';
+        searchInput.value = '';
     }
-});
-
-// FILTERS
-sort.onchange=()=>{
-    sort=sort.value;
+    
+    sort = sortSelect.value;
+    year = yearSelect.value;
+    genre = genreSelect.value;
     reset();
-};
+}
 
-year.onchange=()=>{
-    year=year.value;
-    reset();
-};
+sortSelect.addEventListener('change', handleFilterChange);
+yearSelect.addEventListener('change', handleFilterChange);
+genreSelect.addEventListener('change', handleFilterChange);
 
-// INIT
-init();
 </script>
-
 </body>
 </html>
