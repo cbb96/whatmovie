@@ -139,6 +139,43 @@
     }
     .clear-filters-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* PERSON BANNER (active actor filter) */
+    .person-banner {
+        margin: 0 4% 10px; padding: 12px 18px; border-radius: 10px;
+        background: rgba(102,252,241,0.08); border: 1px solid rgba(102,252,241,0.25);
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .person-banner-text { color: var(--text); font-size: 0.95rem; }
+    .person-banner-text strong { color: var(--accent); }
+    .person-clear {
+        padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+        background: transparent; color: var(--text); font-weight: 600; cursor: pointer;
+        font-size: 0.8rem; transition: all 0.2s; white-space: nowrap;
+    }
+    .person-clear:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* PEOPLE SUGGESTIONS (from search bar) */
+    .people-suggestions {
+        margin: 0 4% 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    }
+    .people-label {
+        font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;
+        color: var(--accent-dim); font-weight: 600;
+    }
+    .person-chip {
+        display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px;
+        border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
+        background: var(--surface); color: var(--white); cursor: pointer;
+        font-size: 0.85rem; font-weight: 600; transition: all 0.2s;
+    }
+    .person-chip:hover { border-color: var(--accent); background: rgba(102,252,241,0.12); }
+    .person-chip img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: #333; }
+    .person-chip-noimg {
+        width: 30px; height: 30px; border-radius: 50%; background: var(--accent-dim); color: var(--bg);
+        display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem;
+    }
+    .person-chip-name { pointer-events: none; }
+
     /* GRID */
     .grid {
         padding: 10px 4% 60px; display: grid;
@@ -211,13 +248,16 @@
     .details-desc { line-height: 1.6; margin-bottom: 25px; color: #ddd; }
 
     .details-content-inner h3 { color: var(--white); margin-bottom: 15px; font-size: 1.2rem; }
+    .cast-hint { font-size: 0.78rem; color: var(--accent-dim); font-weight: 400; margin-left: 6px; }
     .cast-grid { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
     .cast-grid::-webkit-scrollbar { height: 6px; }
     .cast-grid::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 3px; }
 
-    .cast-member { min-width: 90px; width: 90px; text-align: center; }
-    .cast-member img { width: 100%; height: 135px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background: #333; }
-    .cast-member p { font-size: 0.8rem; line-height: 1.2; color: var(--white); }
+    .cast-member { min-width: 90px; width: 90px; text-align: center; cursor: pointer; }
+    .cast-member img { width: 100%; height: 135px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background: #333; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .cast-member:hover img { transform: scale(1.05); box-shadow: 0 4px 14px rgba(102,252,241,0.25); }
+    .cast-member:hover p { color: var(--accent); }
+    .cast-member p { font-size: 0.8rem; line-height: 1.2; color: var(--white); transition: color 0.2s ease; }
     .cast-member span { font-size: 0.7rem; color: #888; }
 
     /* WHERE TO WATCH */
@@ -303,7 +343,7 @@
             </div>
 
             <div id="castSection">
-                <h3>Top Cast</h3>
+                <h3>Top Cast <span class="cast-hint">— click an actor to see their other titles</span></h3>
                 <div id="modalCast" class="cast-grid"></div>
             </div>
 
@@ -324,7 +364,7 @@
                 <button class="active" data-type="movie" onclick="switchMediaType('movie')">Movies</button>
                 <button data-type="tv" onclick="switchMediaType('tv')">TV Shows</button>
             </div>
-            <input id="search" class="search-bar" placeholder="Search movies...">
+            <input id="search" class="search-bar" placeholder="Search movies or actors...">
         </div>
     </nav>
 
@@ -446,6 +486,15 @@
         <button class="clear-filters-btn" onclick="clearAllFilters()">Clear Filters<span id="activeCount" class="active-count" style="display:none;">0</span></button>
     </div>
 
+    <!-- Active actor filter banner -->
+    <div id="personBanner" class="person-banner" style="display:none;">
+        <span class="person-banner-text"></span>
+        <button class="person-clear" onclick="exitPersonMode()">&times; Clear actor</button>
+    </div>
+
+    <!-- People matches from the search bar -->
+    <div id="peopleSuggestions" class="people-suggestions" style="display:none;"></div>
+
     <div id="grid" class="grid"></div>
     <div id="loader" class="loader">Scroll for more</div>
 </div>
@@ -466,6 +515,7 @@ let ratingFilter = '', langFilter = '', runtimeFilter = '';
 let yearFrom = '', yearTo = '';
 let region = localStorage.getItem('tmdb_region') || 'AU';
 let provider = '', monetization = '';
+let personId = '', personName = ''; // active actor filter
 
 // DOM
 const apiModal = document.getElementById('apiModal');
@@ -480,6 +530,11 @@ if (!API_KEY) {
     apiModal.style.display = 'flex';
 } else {
     validateTokenAndStart();
+}
+
+function escapeHTML(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 async function saveAndVerifyApiKey() {
@@ -587,7 +642,7 @@ async function switchMediaType(type) {
         btn.classList.toggle('active', btn.dataset.type === type);
     });
 
-    document.getElementById('search').placeholder = type === 'tv' ? 'Search TV shows...' : 'Search movies...';
+    document.getElementById('search').placeholder = type === 'tv' ? 'Search TV shows or actors...' : 'Search movies or actors...';
 
     const sortSel = document.getElementById('sort');
     if (type === 'tv') {
@@ -618,6 +673,8 @@ async function switchMediaType(type) {
 
     await loadHero();
     updateActiveCount();
+    // Keep the actor filter active across the toggle, just refresh its label
+    if (personId) showPersonBanner();
     reset();
 }
 
@@ -648,16 +705,60 @@ function setHero(item) {
     }
 }
 
+// SHARED CARD RENDERER
+function renderCards(items) {
+    const isTV = mediaType === 'tv';
+    let html = '';
+    items.forEach(item => {
+        const title = item.title || item.name || 'Untitled';
+        const date = item.release_date || item.first_air_date || '';
+        const yearRelease = date ? date.split('-')[0] : 'N/A';
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+        html += `
+        <div class="card" onclick="openDetails(${item.id}, '${mediaType}')">
+            <span class="card-type-badge ${isTV ? 'tv' : 'movie'}">${isTV ? 'TV' : 'Movie'}</span>
+            <img src="${IMG + item.poster_path}" alt="${escapeHTML(title)}" loading="lazy">
+            <div class="card-info">
+                <h4>${escapeHTML(title)}</h4>
+                <span>${yearRelease} • ⭐ ${rating}</span>
+            </div>
+        </div>`;
+    });
+    grid.innerHTML += html;
+}
+
 // LOAD GRID
 async function load() {
     if (isLoading || page > totalPages) return;
     isLoading = true;
     loader.textContent = 'Loading...';
 
-    let url;
     const dateField = mediaType === 'tv' ? 'first_air_date' : 'primary_release_date';
 
-    if (query) {
+    // PERSON MODE + TV: discover/tv has no cast filter, so use the person's TV credits
+    if (personId && mediaType === 'tv') {
+        await loadPersonTV();
+        return;
+    }
+
+    let url;
+
+    if (personId && mediaType === 'movie') {
+        // discover/movie supports with_cast — full filters + pagination still work
+        url = `/discover/movie?sort_by=${sort}&page=${page}&with_cast=${personId}`;
+        if (genre) url += `&with_genres=${genre}`;
+        if (ratingFilter) url += `&vote_average.gte=${ratingFilter}&vote_count.gte=50`;
+        if (langFilter) url += `&with_original_language=${langFilter}`;
+        if (yearFrom) url += `&${dateField}.gte=${yearFrom}-01-01`;
+        if (yearTo) url += `&${dateField}.lte=${yearTo}-12-31`;
+        if (runtimeFilter) {
+            const [min, max] = runtimeFilter.split(',');
+            url += `&with_runtime.gte=${min}&with_runtime.lte=${max}`;
+        }
+        if (provider || monetization) url += `&watch_region=${region}`;
+        if (provider) url += `&with_watch_providers=${provider}`;
+        if (monetization) url += `&with_watch_monetization_types=${monetization}`;
+    } else if (query) {
         const searchType = mediaType === 'tv' ? 'tv' : 'movie';
         url = `/search/${searchType}?query=${encodeURIComponent(query)}&page=${page}`;
         if (langFilter) url += `&language=${langFilter}`;
@@ -699,35 +800,125 @@ async function load() {
     const usable = data.results.filter(item => item.poster_path);
     if (page === 1 && usable.length === 0) {
         loader.style.display = 'none';
+        const hint = personId
+            ? `No ${mediaType === 'tv' ? 'shows' : 'movies'} match these filters for ${escapeHTML(personName)}.<br>Try clearing filters or switching to ${mediaType === 'tv' ? 'Movies' : 'TV Shows'}.`
+            : `Try widening the year range or clearing the streaming service.`;
         grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
-            <strong>No results match these filters.</strong>
-            Try widening the year range or clearing the streaming service.</div>`;
+            <strong>No results match these filters.</strong>${hint}</div>`;
         isLoading = false;
         return;
     }
     loader.style.display = 'block';
 
-    usable.forEach(item => {
-        const title = item.title || item.name || 'Untitled';
-        const date = item.release_date || item.first_air_date || '';
-        const yearRelease = date ? date.split('-')[0] : 'N/A';
-        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
-        const isTV = mediaType === 'tv';
-
-        grid.innerHTML += `
-        <div class="card" onclick="openDetails(${item.id}, '${mediaType}')">
-            <span class="card-type-badge ${isTV ? 'tv' : 'movie'}">${isTV ? 'TV' : 'Movie'}</span>
-            <img src="${IMG + item.poster_path}" alt="${title}" loading="lazy">
-            <div class="card-info">
-                <h4>${title}</h4>
-                <span>${yearRelease} • ⭐ ${rating}</span>
-            </div>
-        </div>`;
-    });
+    renderCards(usable);
 
     page++;
     isLoading = false;
     loader.textContent = page > totalPages ? 'No more results' : 'Scroll for more';
+}
+
+// PERSON MODE for TV — fetch all credits once, filter + sort client-side
+async function loadPersonTV() {
+    const data = await fetchData(`/person/${personId}/tv_credits`);
+    let items = (data.cast || []).filter(i => i.poster_path);
+
+    // dedupe (a person can have multiple roles in one show)
+    const seen = new Set();
+    items = items.filter(i => { if (seen.has(i.id)) return false; seen.add(i.id); return true; });
+
+    // client-side filters
+    if (genre) items = items.filter(i => Array.isArray(i.genre_ids) && i.genre_ids.includes(Number(genre)));
+    if (langFilter) items = items.filter(i => i.original_language === langFilter);
+    if (ratingFilter) items = items.filter(i => (i.vote_average || 0) >= Number(ratingFilter));
+    if (yearFrom) items = items.filter(i => { const y = (i.first_air_date || '').split('-')[0]; return y && Number(y) >= Number(yearFrom); });
+    if (yearTo) items = items.filter(i => { const y = (i.first_air_date || '').split('-')[0]; return y && Number(y) <= Number(yearTo); });
+
+    // sort
+    if (sort === 'vote_average.desc') items.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+    else if (sort === 'first_air_date.desc') items.sort((a, b) => (b.first_air_date || '').localeCompare(a.first_air_date || ''));
+    else items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+
+    grid.innerHTML = '';
+    if (items.length === 0) {
+        loader.style.display = 'none';
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+            <strong>No shows match these filters.</strong>
+            ${escapeHTML(personName)} may only have movie credits — try the Movies tab, or clear some filters.</div>`;
+    } else {
+        loader.style.display = 'block';
+        renderCards(items);
+    }
+
+    totalPages = 1; page = 2; // single batch — stop the infinite scroll
+    loader.textContent = 'No more results';
+    isLoading = false;
+}
+
+// ACTOR FILTER ACTIVATION (from cast click or a search-bar people chip)
+function searchByPerson(id, name) {
+    if (!id) return;
+    personId = id;
+    personName = name || '';
+    query = '';
+    document.getElementById('search').value = '';
+    hidePeopleSuggestions();
+    closeDetails();
+    resetFilterState();   // clean filmography view; filters stay fully usable afterwards
+    showPersonBanner();
+    window.scrollTo({ top: document.querySelector('.filters').offsetTop - 80, behavior: 'smooth' });
+    reset();
+}
+
+function showPersonBanner() {
+    const banner = document.getElementById('personBanner');
+    const label = mediaType === 'tv' ? 'shows' : 'movies';
+    banner.querySelector('.person-banner-text').innerHTML =
+        `Showing ${label} featuring <strong>${escapeHTML(personName)}</strong>`;
+    banner.style.display = 'flex';
+}
+
+function clearPersonMode() {
+    personId = ''; personName = '';
+    document.getElementById('personBanner').style.display = 'none';
+}
+
+function exitPersonMode() {
+    clearPersonMode();
+    reset();
+}
+
+// PEOPLE SUGGESTIONS (typing an actor name in the search bar)
+async function fetchPeopleSuggestions() {
+    const q = query;
+    if (!q || q.length < 3) { hidePeopleSuggestions(); return; }
+    try {
+        const data = await fetchData(`/search/person?query=${encodeURIComponent(q)}&page=1`);
+        if (q !== query) return; // stale response, user kept typing
+        const people = (data.results || [])
+            .filter(p => p.profile_path || (p.known_for && p.known_for.length))
+            .slice(0, 6);
+        renderPeopleSuggestions(people);
+    } catch (e) { /* silent */ }
+}
+
+function renderPeopleSuggestions(people) {
+    const box = document.getElementById('peopleSuggestions');
+    if (!people.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.innerHTML = `<span class="people-label">People:</span>` + people.map(p => {
+        const img = p.profile_path ? LOGO_IMG + p.profile_path : '';
+        const initial = escapeHTML((p.name || '?').charAt(0));
+        return `<button class="person-chip" data-name="${escapeHTML(p.name)}" onclick="searchByPerson(${p.id}, this.dataset.name)">
+            ${img ? `<img src="${img}" alt="">` : `<span class="person-chip-noimg">${initial}</span>`}
+            <span class="person-chip-name">${escapeHTML(p.name)}</span>
+        </button>`;
+    }).join('');
+    box.style.display = 'flex';
+}
+
+function hidePeopleSuggestions() {
+    const box = document.getElementById('peopleSuggestions');
+    box.style.display = 'none';
+    box.innerHTML = '';
 }
 
 // DETAILS MODAL
@@ -794,7 +985,7 @@ async function openDetails(id, type) {
     if (data.vote_count) extras.push({ label: 'Votes', value: data.vote_count.toLocaleString() });
 
     document.getElementById('modalExtraDetails').innerHTML = extras.map(e =>
-        `<div class="detail-item"><div class="label">${e.label}</div><div class="value">${e.value}</div></div>`
+        `<div class="detail-item"><div class="label">${e.label}</div><div class="value">${escapeHTML(e.value)}</div></div>`
     ).join('');
 
     // Description
@@ -812,17 +1003,17 @@ async function openDetails(id, type) {
         document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${mainTrailer.key}?autoplay=1`;
     }
 
-    // Cast (Top 8)
+    // Cast (Top 8) — clickable to filter the grid by that actor
     const castList = data.credits?.cast?.slice(0, 8) || [];
     const castContainer = document.getElementById('modalCast');
     if (castList.length === 0) {
         castContainer.innerHTML = '<p style="color: var(--text);">No cast information available.</p>';
     } else {
         castContainer.innerHTML = castList.map(actor => `
-            <div class="cast-member">
-                <img src="${actor.profile_path ? IMG + actor.profile_path : 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2290%22 height=%22135%22><rect fill=%22%23333%22 width=%2290%22 height=%22135%22/><text fill=%22%23666%22 x=%2245%22 y=%2275%22 text-anchor=%22middle%22 font-size=%2212%22>No Photo</text></svg>'}" alt="${actor.name}">
-                <p>${actor.name}</p>
-                <span>${actor.character ? actor.character.split(' / ')[0] : ''}</span>
+            <div class="cast-member" data-name="${escapeHTML(actor.name)}" title="See more from ${escapeHTML(actor.name)}" onclick="searchByPerson(${actor.id}, this.dataset.name)">
+                <img src="${actor.profile_path ? IMG + actor.profile_path : 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2290%22 height=%22135%22><rect fill=%22%23333%22 width=%2290%22 height=%22135%22/><text fill=%22%23666%22 x=%2245%22 y=%2275%22 text-anchor=%22middle%22 font-size=%2212%22>No Photo</text></svg>'}" alt="${escapeHTML(actor.name)}">
+                <p>${escapeHTML(actor.name)}</p>
+                <span>${actor.character ? escapeHTML(actor.character.split(' / ')[0]) : ''}</span>
             </div>
         `).join('');
     }
@@ -836,7 +1027,7 @@ async function openDetails(id, type) {
                 <div class="season-item">
                     <img src="${s.poster_path ? IMG + s.poster_path : 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2290%22><rect fill=%22%23333%22 width=%2260%22 height=%2290%22/></svg>'}" alt="Season ${s.season_number}">
                     <div class="season-info">
-                        <h4>${s.name}</h4>
+                        <h4>${escapeHTML(s.name)}</h4>
                         <p>${s.episode_count} episodes${s.air_date ? ' • ' + s.air_date.split('-')[0] : ''}</p>
                     </div>
                 </div>
@@ -866,7 +1057,7 @@ function renderWatchProviders(wp) {
         const items = regionData[g.key];
         if (items && items.length) {
             html += `<div class="watch-row"><div class="watch-label">${g.label}</div><div class="watch-logos">` +
-                items.map(p => `<img class="watch-logo" title="${p.provider_name}" alt="${p.provider_name}" src="${p.logo_path ? LOGO_IMG + p.logo_path : ''}">`).join('') +
+                items.map(p => `<img class="watch-logo" title="${escapeHTML(p.provider_name)}" alt="${escapeHTML(p.provider_name)}" src="${p.logo_path ? LOGO_IMG + p.logo_path : ''}">`).join('') +
                 `</div></div>`;
         }
     });
@@ -893,12 +1084,12 @@ function updateActiveCount() {
     else { badge.style.display = 'none'; }
 }
 
-function clearAllFilters() {
-    query = ''; sort = 'popularity.desc'; genre = '';
+// Reset only the filter controls (not the actor filter or text query)
+function resetFilterState() {
+    sort = 'popularity.desc'; genre = '';
     yearFrom = ''; yearTo = '';
     ratingFilter = ''; langFilter = ''; runtimeFilter = '';
     provider = ''; monetization = '';
-    document.getElementById('search').value = '';
     document.getElementById('sort').value = 'popularity.desc';
     document.getElementById('yearFrom').value = '';
     document.getElementById('yearTo').value = '';
@@ -909,6 +1100,14 @@ function clearAllFilters() {
     document.getElementById('monetizationFilter').value = '';
     document.getElementById('runtimeFilter').value = '';
     updateActiveCount();
+}
+
+function clearAllFilters() {
+    query = '';
+    document.getElementById('search').value = '';
+    hidePeopleSuggestions();
+    clearPersonMode();
+    resetFilterState();
     reset();
 }
 
@@ -923,6 +1122,8 @@ function setupObserver() {
 document.getElementById('search').addEventListener('input', e => {
     query = e.target.value.trim();
     if (query.length > 0) {
+        // Typing a title cancels any active actor filter
+        clearPersonMode();
         // Search ignores discover-only filters — reset them so the UI is honest
         document.getElementById('sort').value = 'popularity.desc'; sort = 'popularity.desc';
         document.getElementById('genre').value = ''; genre = '';
@@ -933,15 +1134,27 @@ document.getElementById('search').addEventListener('input', e => {
         document.getElementById('monetizationFilter').value = ''; monetization = '';
         document.getElementById('runtimeFilter').value = ''; runtimeFilter = '';
         updateActiveCount();
+    } else {
+        hidePeopleSuggestions();
     }
+
+    // Title results in the grid (debounced)
     if (query.length > 2 || query.length === 0) {
         clearTimeout(window.searchTimeout);
         window.searchTimeout = setTimeout(reset, 400);
     }
+
+    // People matches as clickable chips (debounced, separate)
+    if (query.length > 2) {
+        clearTimeout(window.personTimeout);
+        window.personTimeout = setTimeout(fetchPeopleSuggestions, 400);
+    } else {
+        hidePeopleSuggestions();
+    }
 });
 
 function handleFilterChange() {
-    if (query.length > 0) { query = ''; document.getElementById('search').value = ''; }
+    if (query.length > 0) { query = ''; document.getElementById('search').value = ''; hidePeopleSuggestions(); }
     sort = document.getElementById('sort').value;
     genre = document.getElementById('genre').value;
     ratingFilter = document.getElementById('ratingFilter').value;
@@ -960,7 +1173,7 @@ function handleFilterChange() {
     }
 
     updateActiveCount();
-    reset();
+    reset(); // keeps personId if set — filters apply on top of the actor filter
 }
 
 ['sort', 'genre', 'yearFrom', 'yearTo', 'ratingFilter', 'langFilter', 'providerFilter', 'monetizationFilter', 'runtimeFilter']
