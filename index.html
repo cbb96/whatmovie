@@ -16,6 +16,8 @@
         --accent: #66fcf1;
         --accent-dim: #45a29e;
         --tv: #e040fb;
+        --ai: #b69cff;
+        --ai-ink: #150b2b;
         --danger: #ff5c6c;
         --gold: #ffc857;
         --text: #c5c6c7;
@@ -73,6 +75,28 @@
     .error-msg { color: var(--danger); font-size: 0.85rem; margin-bottom: 10px; display: none; }
     .fineprint { font-size: 0.72rem; color: var(--muted); margin-top: 18px; margin-bottom: 0; line-height: 1.5; }
 
+    /* ---------- SETTINGS ---------- */
+    .settings-box { position: relative; text-align: left; max-width: 480px; max-height: 92vh; overflow-y: auto; }
+    .settings-box h2 { margin-bottom: 18px; }
+    .settings-box .close-btn { width: 36px; padding: 0; background: rgba(0,0,0,0.4); color: var(--white); }
+    .settings-box .close-btn:hover { background: var(--accent); color: var(--bg); }
+    .set-group + .set-group { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .set-group h3 { color: var(--white); font-size: 1.02rem; margin-bottom: 6px; }
+    .settings-box p.set-help { font-size: 0.84rem; line-height: 1.5; margin-bottom: 14px; }
+    .set-field-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; display: block; }
+    .settings-box input { margin-bottom: 12px; }
+    .settings-box input.ai-field { border-color: rgba(182,156,255,0.45); }
+    .settings-box input.ai-field:focus { border-color: var(--ai); }
+    .set-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .set-row button { flex: 1 1 140px; }
+    .settings-box button.ai-save { background: var(--ai); color: var(--ai-ink); }
+    .settings-box button.ai-save:hover { background: var(--white); }
+    .settings-box button.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .settings-box button.ghost:hover { background: transparent; border-color: var(--danger); color: var(--danger); }
+    .set-status { font-size: 0.8rem; margin-bottom: 12px; padding: 8px 12px; border-radius: 8px; }
+    .set-status.on { background: rgba(182,156,255,0.12); color: var(--ai); }
+    .set-status.off { background: rgba(255,255,255,0.04); color: var(--muted); }
+
     /* ---------- NAV ---------- */
     nav {
         position: sticky; top: 0; width: 100%;
@@ -97,6 +121,14 @@
         border-radius: 9px; background: rgba(255,255,255,0.15); font-size: 0.7rem; font-weight: 800;
     }
     .tabs button.active .tab-count { background: rgba(0,0,0,0.25); }
+
+    .nav-icon-btn {
+        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+        border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+        font-size: 1.05rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .nav-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .nav-icon-btn.ai-on { border-color: rgba(182,156,255,0.5); color: var(--ai); }
 
     .search-wrap { position: relative; flex: 1; max-width: 420px; min-width: 180px; }
     .search-bar {
@@ -150,6 +182,49 @@
     .btn:hover { background: rgba(255,255,255,0.16); border-color: var(--accent-dim); }
     .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
     .btn.primary:hover { background: var(--white); border-color: var(--white); }
+    .btn.ai { background: var(--ai); color: var(--ai-ink); border-color: var(--ai); }
+    .btn.ai:hover { background: var(--white); border-color: var(--white); }
+    .btn[disabled] { opacity: 0.6; cursor: wait; }
+
+    /* ---------- AI BAR ---------- */
+    .ai-bar {
+        margin: 16px 4% 0; padding: 14px; border-radius: 14px;
+        background: linear-gradient(135deg, rgba(182,156,255,0.13), rgba(102,252,241,0.05));
+        border: 1px solid rgba(182,156,255,0.3);
+    }
+    .ai-row { display: flex; gap: 10px; align-items: center; }
+    .ai-input-wrap { position: relative; flex: 1; min-width: 0; }
+    .ai-spark { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+    .ai-row input {
+        width: 100%; padding: 12px 14px 12px 38px; border-radius: 10px;
+        border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: var(--white); outline: none;
+        transition: border 0.2s;
+    }
+    .ai-row input::placeholder { color: var(--muted); }
+    .ai-row input:focus { border-color: var(--ai); }
+    .ai-examples { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+    .ai-ex {
+        font-size: 0.75rem; padding: 5px 11px; border-radius: 20px;
+        border: 1px dashed rgba(182,156,255,0.4); background: transparent; color: var(--muted); transition: 0.2s;
+    }
+    .ai-ex:hover { color: var(--ai); border-color: var(--ai); }
+    .ai-status { font-size: 0.82rem; color: var(--ai); margin-top: 8px; min-height: 0; }
+    .ai-status:empty { display: none; }
+    .ai-status.err { color: var(--danger); }
+    .ai-dots::after { content: ''; animation: dots 1.2s steps(4) infinite; }
+    @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+
+    .ai-banner {
+        margin: 14px 4% 0; padding: 12px 16px; border-radius: 12px;
+        background: rgba(182,156,255,0.08); border: 1px solid rgba(182,156,255,0.28);
+        display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .ai-banner-text { flex: 1; min-width: 200px; font-size: 0.88rem; line-height: 1.45; }
+    .ai-banner-text strong { color: var(--ai); display: block; font-size: 1rem; margin-bottom: 2px; }
+    .ai-theme-tag {
+        display: inline-block; margin: 6px 6px 0 0; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem;
+        background: rgba(182,156,255,0.15); color: var(--ai); font-weight: 600;
+    }
 
     /* ---------- TOOLBAR ---------- */
     .toolbar {
@@ -244,6 +319,7 @@
         background: transparent; color: var(--text); font-weight: 600; font-size: 0.8rem; transition: 0.2s;
     }
     .person-clear:hover { border-color: var(--danger); color: var(--danger); }
+    .person-clear.soft:hover { border-color: var(--ai); color: var(--ai); }
 
     .notice {
         margin: 14px 4% 0; padding: 12px 16px; border-radius: 12px; font-size: 0.86rem;
@@ -299,6 +375,7 @@
     .pill.tv { background: var(--tv); color: #fff; }
     .pill.plot { background: var(--gold); color: #241c00; }
     .pill.theme { background: #7c5cff; color: #fff; }
+    .pill.ai { background: var(--ai); color: var(--ai-ink); }
     .fav-btn {
         position: absolute; top: 6px; right: 6px; z-index: 4;
         width: 32px; height: 32px; border-radius: 50%; border: none;
@@ -397,6 +474,28 @@
     .watch-logo { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; background: #333; border: 1px solid var(--border); }
     .watch-empty { font-size: 0.85rem; color: var(--muted); }
 
+    /* AI take inside details */
+    .ai-panel {
+        padding: 16px; border-radius: 12px;
+        background: rgba(182,156,255,0.07); border: 1px solid rgba(182,156,255,0.25);
+    }
+    .ai-panel h3 { color: var(--ai) !important; }
+    .ai-fit { color: var(--ai); font-weight: 600; margin-bottom: 8px; font-size: 0.92rem; }
+    .ai-pitch { line-height: 1.6; color: #e6e1f5; margin-bottom: 12px; }
+    .ai-cols { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
+    .ai-cols > div { flex: 1 1 200px; }
+    .ai-cols .watch-label { color: var(--ai); }
+    .ai-cols ul { padding-left: 18px; font-size: 0.86rem; line-height: 1.55; }
+    .ai-heads { font-size: 0.84rem; color: var(--gold); margin-bottom: 6px; }
+    .ai-disclaimer { font-size: 0.7rem; color: var(--muted); }
+    .ai-tweak { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .ai-tweak input {
+        flex: 1 1 220px; min-width: 0; padding: 10px 12px; border-radius: 8px;
+        border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: var(--white); outline: none;
+    }
+    .ai-tweak input:focus { border-color: var(--ai); }
+    .ai-err { color: var(--danger); font-size: 0.85rem; margin-bottom: 10px; }
+
     .season-item {
         display: flex; gap: 12px; padding: 12px; background: rgba(0,0,0,0.28);
         border-radius: 10px; margin-bottom: 8px; align-items: center;
@@ -423,6 +522,8 @@
         .details-box { max-height: 95vh; }
         .details-content-inner { padding: 18px; }
         .filters { padding: 14px; }
+        .ai-row { flex-wrap: wrap; }
+        .ai-row .btn { width: 100%; justify-content: center; }
     }
 </style>
 </head>
@@ -437,7 +538,39 @@
         <input type="password" id="apiKeyInput" placeholder="TMDB v3 API key" autocomplete="off">
         <button id="apiSaveBtn">Save and continue</button>
         <p class="fineprint">Get a free key at <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">themoviedb.org/settings/api</a>.<br>
+        Want AI search too? You can add an optional Gemini key later in ⚙ Settings.<br>
         This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    </div>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div id="settingsOverlay" class="details-overlay">
+    <div class="modal-content settings-box" role="dialog" aria-labelledby="settingsTitle">
+        <button class="close-btn" data-action="close-settings" aria-label="Close settings">&times;</button>
+        <h2 id="settingsTitle">Settings</h2>
+
+        <div class="set-group">
+            <h3>✨ AI search (optional)</h3>
+            <p class="set-help">Add a Google Gemini API key to describe what you want in plain English, identify a half-remembered title, and get a spoiler-free "should I watch this?" on any title. Leave it blank and CineSearch works exactly as before.
+            Get a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.</p>
+            <div id="aiSetStatus" class="set-status off">AI search is off.</div>
+            <label class="set-field-label" for="geminiKeyInput">Gemini API key</label>
+            <input type="password" id="geminiKeyInput" class="ai-field" placeholder="Paste your Gemini API key" autocomplete="off">
+            <label class="set-field-label" for="geminiModelInput">Model</label>
+            <input id="geminiModelInput" class="ai-field" placeholder="gemini-3.8-flash" autocomplete="off" spellcheck="false">
+            <p id="geminiError" class="error-msg"></p>
+            <div class="set-row">
+                <button id="geminiSaveBtn" class="ai-save">Save and turn on AI</button>
+                <button class="ghost" data-action="remove-gemini" id="geminiRemoveBtn">Turn AI off</button>
+            </div>
+            <p class="fineprint">Your key is stored only in this browser and sent straight to Google. For safety, restrict the key to your site's address in Google Cloud Console. AI answers can be wrong; results always come from TMDB.</p>
+        </div>
+
+        <div class="set-group">
+            <h3>TMDB</h3>
+            <p class="set-help">Switch to a different TMDB key. Your saved list and filters stay.</p>
+            <button class="ghost" data-action="forget-tmdb">Change TMDB key</button>
+        </div>
     </div>
 </div>
 
@@ -454,6 +587,15 @@
             <div id="modalActions" class="modal-actions"></div>
             <div id="modalExtraDetails" class="detail-row"></div>
             <p id="modalDesc" class="details-desc"></p>
+
+            <div id="aiDetailSection" class="section ai-panel" style="display:none;">
+                <h3>✨ AI take</h3>
+                <div id="aiTake"></div>
+                <div class="ai-tweak">
+                    <input id="aiTweakInput" placeholder="More like this, but… (funnier, set in space, a series)" autocomplete="off">
+                    <button class="btn ai" data-action="ai-tweak">Find similar</button>
+                </div>
+            </div>
 
             <div id="watchSection" class="section" style="display:none;">
                 <h3>Where to watch <span class="cast-hint" id="watchRegionLabel"></span></h3>
@@ -494,6 +636,7 @@
                 <span class="search-kbd">/</span>
                 <button class="search-clear" data-action="clear-search" aria-label="Clear search">&times;</button>
             </div>
+            <button class="nav-icon-btn" id="settingsBtn" data-action="open-settings" aria-label="Settings" title="Settings">⚙</button>
         </div>
     </nav>
 
@@ -509,6 +652,24 @@
             </div>
         </div>
     </div>
+
+    <section class="ai-bar" id="aiBar" style="display:none;">
+        <div class="ai-row">
+            <div class="ai-input-wrap">
+                <span class="ai-spark" aria-hidden="true">✨</span>
+                <input id="aiInput" placeholder="Describe what you feel like watching…" autocomplete="off" aria-label="Describe what you want to watch">
+            </div>
+            <button class="btn ai" id="aiGo" data-action="ai-go">Find it</button>
+        </div>
+        <div class="ai-examples">
+            <span class="hint">Try:</span>
+            <button class="ai-ex" data-ai-example="Feel-good 90s comedy">Feel-good 90s comedy</button>
+            <button class="ai-ex" data-ai-example="Slow-burn sci-fi horror under 2 hours">Slow-burn sci-fi horror under 2 hours</button>
+            <button class="ai-ex" data-ai-example="That movie where a soldier relives the same day fighting aliens">That movie where a soldier relives the same day…</button>
+            <button class="ai-ex" data-ai-example="Highly rated Korean thriller series on Netflix">Korean thriller series on Netflix</button>
+        </div>
+        <div class="ai-status" id="aiStatus"></div>
+    </section>
 
     <div class="quick-picks" id="quickPicks">
         <button class="quick-chip" data-preset="trending">Popular now</button>
@@ -648,6 +809,7 @@
     </section>
 
     <div id="notice" class="notice" style="display:none;"></div>
+    <div id="aiBanner" class="ai-banner" style="display:none;"></div>
     <div id="personBanner" class="person-banner" style="display:none;"></div>
     <div id="peopleSuggestions" class="people-suggestions" style="display:none;"></div>
 
@@ -656,7 +818,7 @@
 
     <footer>
         Data from The Movie Database. This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
-        Shortcuts: <strong>/</strong> search · <strong>f</strong> filters · <strong>Esc</strong> close
+        Shortcuts: <strong>/</strong> search · <strong>a</strong> AI search · <strong>f</strong> filters · <strong>Esc</strong> close
     </footer>
 </div>
 
@@ -664,13 +826,16 @@
 
 <script>
 /* =========================================================
-   CineSearch — TMDB browser
+   CineSearch — TMDB browser (+ optional Gemini AI)
    ========================================================= */
 const BASE = 'https://api.themoviedb.org/3';
 const IMG = 'https://image.tmdb.org/t/p/w500';
 const LOGO_IMG = 'https://image.tmdb.org/t/p/w92';
 const HERO_IMG = 'https://image.tmdb.org/t/p/original';
 const BACKDROP_IMG = 'https://image.tmdb.org/t/p/w780';
+
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const DEFAULT_MODEL = 'gemini-3.8-flash';
 
 const NO_POSTER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450"><rect width="300" height="450" fill="#1f2833"/><text x="150" y="225" fill="#556" font-family="sans-serif" font-size="18" text-anchor="middle">No poster</text></svg>');
@@ -690,6 +855,9 @@ const store = (() => {
 })();
 
 let API_KEY = store.get('tmdb_api_key');
+let GEMINI_KEY = store.get('gemini_api_key') || '';
+let GEMINI_MODEL = store.get('gemini_model') || DEFAULT_MODEL;
+const aiEnabled = () => !!GEMINI_KEY;
 
 /* ---------- state ---------- */
 const state = {
@@ -706,7 +874,13 @@ const state = {
     region: store.get('tmdb_region') || 'AU',
     provider: '', monetization: '',
     personId: '', personName: '', personProfile: '', personDept: '', personRole: 'cast',
-    density: store.get('cs_density') || 'comfy'
+    density: store.get('cs_density') || 'comfy',
+    // AI mode
+    ai: null,                 // { label, summary, raw }
+    aiTitles: null,           // array of resolved TMDB items (identify mode)
+    aiKeywords: [],           // TMDB keyword ids
+    aiKeywordNames: [],
+    aiExclude: ''             // 'type:id' to hide (e.g. the title you asked "more like")
 };
 
 let page = 1, totalPages = 1, totalResults = 0, isLoading = false, loadToken = 0;
@@ -749,6 +923,50 @@ async function fetchData(path, useCache = true) {
         if (cache.size > 250) cache.delete(cache.keys().next().value);
     }
     return data;
+}
+
+/* =========================================================
+   GEMINI
+   ========================================================= */
+function parseJsonLoose(text) {
+    const t = String(text || '').replace(/```json|```/gi, '').trim();
+    try { return JSON.parse(t); } catch (e) {}
+    const a = t.indexOf('{'), b = t.lastIndexOf('}');
+    if (a > -1 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch (e) {} }
+    throw new Error("The AI's reply couldn't be read. Try rephrasing.");
+}
+
+async function callGemini(system, userText) {
+    let res;
+    try {
+        res = await fetch(`${GEMINI_BASE}/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: system }] },
+                contents: [{ role: 'user', parts: [{ text: userText }] }],
+                generationConfig: { responseMimeType: 'application/json' }
+            })
+        });
+    } catch (e) {
+        throw new Error("Couldn't reach Gemini. Check your connection.");
+    }
+    if (!res.ok) {
+        let msg = `Gemini returned ${res.status}`;
+        try { const j = await res.json(); if (j.error && j.error.message) msg = j.error.message; } catch (e) {}
+        if (res.status === 429) msg = 'Gemini rate limit reached. Wait a minute and try again.';
+        if (res.status === 404) msg = `Model "${GEMINI_MODEL}" wasn't found. Change it in ⚙ Settings.`;
+        if (res.status === 400 && /api key/i.test(msg)) msg = 'Google rejected your Gemini key. Update it in ⚙ Settings.';
+        throw new Error(msg);
+    }
+    const data = await res.json();
+    if (data.promptFeedback && data.promptFeedback.blockReason) {
+        throw new Error('Gemini declined that request. Try wording it differently.');
+    }
+    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+    const text = parts.filter(p => !p.thought).map(p => p.text || '').join('');
+    if (!text) throw new Error('Gemini sent back an empty reply. Try again.');
+    return parseJsonLoose(text);
 }
 
 /* =========================================================
@@ -800,6 +1018,7 @@ async function initializeUI() {
     buildSortOptions();
     applyDensity();
     updateDeepBtn();
+    updateAiUI();
     try {
         const [mg, tg] = await Promise.all([fetchData('/genre/movie/list'), fetchData('/genre/tv/list')]);
         genreMap.movie = mg.genres || [];
@@ -839,6 +1058,20 @@ function populateYears() {
     from.value = state.yearFrom; to.value = state.yearTo;
 }
 
+// Makes sure a select can show a value that isn't one of its preset options (AI can set any runtime/language).
+function ensureOption(sel, value, label) {
+    if (value && ![...sel.options].some(o => o.value === value)) {
+        sel.insertAdjacentHTML('beforeend', `<option value="${escapeHTML(value)}">${escapeHTML(label)}</option>`);
+    }
+    sel.value = value || '';
+}
+function runtimeLabel(v) {
+    const [min, max] = String(v).split(',').map(Number);
+    if (!min && max) return `Up to ${max} min`;
+    if (min && (!max || max >= 999)) return `Over ${min} min`;
+    return `${min}–${max} min`;
+}
+
 function buildSortOptions() {
     const sel = $('sort');
     const movieOpts = [
@@ -864,9 +1097,23 @@ function buildSortOptions() {
     sel.value = state.sort;
     $('runtimeFilterItem').style.display = state.mediaType === 'tv' ? 'none' : 'flex';
     $('ratingFilter').value = state.rating;
-    $('langFilter').value = state.lang;
-    $('runtimeFilter').value = state.runtime;
+    ensureOption($('langFilter'), state.lang, String(state.lang).toUpperCase());
+    ensureOption($('runtimeFilter'), state.runtime, runtimeLabel(state.runtime));
     $('monetizationFilter').value = state.monetization;
+}
+
+// Push the whole state back into the filter inputs (used after AI sets filters).
+function syncFilterInputs() {
+    $('sort').value = state.sort;
+    $('yearFrom').value = state.yearFrom;
+    $('yearTo').value = state.yearTo;
+    $('ratingFilter').value = state.rating;
+    ensureOption($('langFilter'), state.lang, String(state.lang).toUpperCase());
+    ensureOption($('runtimeFilter'), state.runtime, runtimeLabel(state.runtime));
+    $('providerFilter').value = state.provider;
+    $('monetizationFilter').value = state.monetization;
+    renderGenreChips();
+    updateActiveCount();
 }
 
 async function populateProviders() {
@@ -940,7 +1187,8 @@ function discoverUrl(pageNum, extra) {
     if (state.yearTo) p.set(dateField + '.lte', state.yearTo + '-12-31');
     if (t !== 'tv' && state.runtime) {
         const [min, max] = state.runtime.split(',');
-        p.set('with_runtime.gte', min); p.set('with_runtime.lte', max);
+        if (Number(min) > 0) p.set('with_runtime.gte', min);
+        p.set('with_runtime.lte', max || 999);
     }
     if (state.provider || state.monetization) p.set('watch_region', state.region);
     if (state.provider) p.set('with_watch_providers', state.provider);
@@ -951,6 +1199,7 @@ function discoverUrl(pageNum, extra) {
     if (state.personId) {
         p.set(state.personRole === 'cast' ? 'with_cast' : 'with_people', state.personId);
     }
+    if (state.aiKeywords.length) p.set('with_keywords', state.aiKeywords.join('|'));
     if (extra) Object.entries(extra).forEach(([k, v]) => p.set(k, v));
     return `/discover/${t}?${p.toString()}`;
 }
@@ -1013,7 +1262,8 @@ async function load() {
     loader.textContent = 'Loading…';
     try {
         let items;
-        if (state.personId && state.mediaType === 'tv') items = await fetchPersonTV();
+        if (state.aiTitles) items = fetchAiTitles();
+        else if (state.personId && state.mediaType === 'tv') items = await fetchPersonTV();
         else if (state.query && !state.personId) items = await fetchSearchPage();
         else items = await fetchDiscoverPage();
 
@@ -1021,7 +1271,7 @@ async function load() {
         clearSkeletons();
         const fresh = items.filter(i => {
             const key = (i.__type || state.mediaType) + ':' + i.id;
-            if (seenIds.has(key)) return false;
+            if (seenIds.has(key) || key === state.aiExclude) return false;
             seenIds.add(key); return true;
         });
         renderedItems.push(...fresh);
@@ -1044,10 +1294,23 @@ async function load() {
 }
 
 async function fetchDiscoverPage() {
-    const data = await fetchData(discoverUrl(page));
+    let data = await fetchData(discoverUrl(page));
+    // AI theme keywords can be too narrow — drop them rather than show nothing.
+    if (page === 1 && !(data.results || []).length && state.aiKeywords.length) {
+        state.aiKeywords = []; state.aiKeywordNames = [];
+        showAiBanner();
+        showNotice("Nothing matched the AI's theme keywords as well, so those were dropped. These match the other filters.");
+        data = await fetchData(discoverUrl(page));
+    }
     totalPages = Math.min(data.total_pages || 1, 500);
     totalResults = data.total_results || 0;
     return (data.results || []).map(i => ({ ...i, __type: state.mediaType }));
+}
+
+function fetchAiTitles() {
+    totalPages = 1;
+    totalResults = state.aiTitles.length;
+    return state.aiTitles;
 }
 
 /* ---- search: titles + plot text + themed keywords ---- */
@@ -1131,7 +1394,8 @@ function renderCards(items) {
         const saved = inWatchlist(type, item.id);
         const matchPill = item.__match === 'plot'
             ? '<span class="pill plot">Plot match</span>'
-            : item.__match === 'theme' ? '<span class="pill theme">Theme</span>' : '';
+            : item.__match === 'theme' ? '<span class="pill theme">Theme</span>'
+            : item.__match === 'ai' ? '<span class="pill ai">AI guess</span>' : '';
         return `
         <article class="card" data-id="${item.id}" data-type="${type}" tabindex="0" role="button" aria-label="${escapeHTML(title)}">
             <div class="card-badges">
@@ -1154,6 +1418,7 @@ function renderEmptyState() {
     let hint = 'Widen the year range, drop a genre, or clear the streaming service.';
     if (state.personId) hint = `Nothing from ${escapeHTML(state.personName)} matches these filters. Try the ${state.mediaType === 'tv' ? 'Movies' : 'TV'} tab or clear a filter.`;
     else if (state.query) hint = `No ${what} match "${escapeHTML(state.query)}" with these filters.${state.deep ? '' : ' Turn on plot search to match descriptions too.'}`;
+    else if (state.ai) hint = "The AI's filters were too narrow. Loosen them in Filters, or rephrase your request.";
     grid.innerHTML = `<div class="state-box"><strong>Nothing here yet</strong>${hint}
         <br><button class="btn primary" data-action="clear-filters">Clear filters</button></div>`;
     loader.textContent = '';
@@ -1168,7 +1433,9 @@ function updateResultCount() {
     let ctx = '';
     if (state.personId) ctx = ` with ${state.personName}`;
     else if (state.query) ctx = ` for "${state.query}"`;
-    el.innerHTML = `<strong>${renderedItems.length}</strong>${approx} ${label}${escapeHTML(ctx)}`;
+    else if (state.aiTitles) ctx = ' the AI thinks you mean';
+    else if (state.ai) ctx = ' from your AI search';
+    el.innerHTML = `<strong>${renderedItems.length}</strong>${approx} ${state.aiTitles ? 'titles' : label}${escapeHTML(ctx)}`;
 }
 
 function showNotice(msg) { const n = $('notice'); n.textContent = msg; n.style.display = 'block'; }
@@ -1277,16 +1544,18 @@ async function openDetails(id, type) {
     $('mediaHead').innerHTML = '';
     $('modalTitle').textContent = 'Loading…';
     $('modalTagline').style.display = 'none';
-    ['modalDesc', 'modalCast', 'modalMeta', 'modalGenres', 'modalExtraDetails', 'modalSeasons', 'modalWatch', 'modalRecs', 'modalActions']
+    ['modalDesc', 'modalCast', 'modalMeta', 'modalGenres', 'modalExtraDetails', 'modalSeasons', 'modalWatch', 'modalRecs', 'modalActions', 'aiTake']
         .forEach(i => { $(i).innerHTML = ''; });
     $('seasonsSection').style.display = 'none';
     $('watchSection').style.display = 'none';
     $('recsSection').style.display = 'none';
+    $('aiDetailSection').style.display = 'none';
+    currentDetail = null;
     $('detailsBox').querySelector('.close-btn').focus();
 
     let data;
     try {
-        const appends = 'videos,credits,watch/providers,recommendations,' +
+        const appends = 'videos,credits,watch/providers,recommendations,keywords,' +
             (type === 'tv' ? 'content_ratings' : 'release_dates');
         data = await fetchData(`/${type}/${id}?append_to_response=${appends}`);
     } catch (e) {
@@ -1401,6 +1670,25 @@ async function openDetails(id, type) {
                 <span>${yearOf(r.release_date || r.first_air_date)} · ⭐ ${r.vote_average ? r.vote_average.toFixed(1) : 'NR'}</span>
             </div>`).join('');
     }
+
+    // context for the AI features (only used if a Gemini key is set)
+    const kwList = ((data.keywords && (data.keywords.keywords || data.keywords.results)) || []).map(k => k.name).slice(0, 12);
+    currentDetail.ctx = {
+        title,
+        kind: isTV ? 'TV series' : 'movie',
+        year: yearOf(data.release_date || data.first_air_date),
+        genres: (data.genres || []).map(g => g.name),
+        runtime: isTV
+            ? ((data.episode_run_time && data.episode_run_time[0]) ? `${data.episode_run_time[0]} min episodes, ${data.number_of_seasons || '?'} seasons` : '')
+            : (data.runtime ? `${data.runtime} min` : ''),
+        certification: cert,
+        tmdb_rating: data.vote_average ? data.vote_average.toFixed(1) + '/10' : '',
+        made_by: isTV ? (data.created_by || []).map(c => c.name).join(', ') : directors.join(', '),
+        cast: castList.slice(0, 5).map(a => a.name),
+        themes: kwList,
+        overview: data.overview || ''
+    };
+    setupAiDetail();
 }
 
 function getCertification(data, isTV) {
@@ -1442,9 +1730,407 @@ function renderWatchProviders(wp) {
 
 function closeDetails() {
     $('detailsOverlay').style.display = 'none';
-    document.body.style.overflow = '';
+    if ($('settingsOverlay').style.display !== 'flex') document.body.style.overflow = '';
     $('mediaHead').innerHTML = '';
     if (lastFocused && lastFocused.focus) lastFocused.focus();
+}
+
+/* =========================================================
+   AI: DETAILS ("Should I watch this?" + "More like this, but…")
+   ========================================================= */
+const aiTakeCache = new Map();
+
+function setupAiDetail() {
+    const sec = $('aiDetailSection');
+    if (!aiEnabled() || !currentDetail) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+    $('aiTweakInput').value = '';
+    const key = currentDetail.type + ':' + currentDetail.id + '|' + (state.ai ? state.ai.label : '');
+    if (aiTakeCache.has(key)) renderAiTake(aiTakeCache.get(key));
+    else $('aiTake').innerHTML = `<button class="btn ai" data-action="ai-take">✨ Should I watch this?</button>`;
+}
+
+const TAKE_SYSTEM = `You are a friendly, honest film and TV guide inside a movie finder app.
+Using the details provided plus your general knowledge of this specific title, give a spoiler-free take.
+Never reveal twists, deaths or endings. Be honest about weaknesses. If you don't recognise the title, rely only on the details given.
+Reply with a single JSON object and nothing else:
+{
+  "pitch": "2 short sentences on what it is and what makes it worth watching",
+  "watch_if": ["2-3 short reasons, each under 12 words"],
+  "skip_if": ["1-2 short reasons, each under 12 words"],
+  "heads_up": "brief content note (violence, gore, language, sexual content, sad themes) or empty string",
+  "fit": "one sentence on how well it fits the viewer's request, or empty string if no request was given"
+}`;
+
+async function aiTake() {
+    const d = currentDetail;
+    if (!d || !d.ctx) return;
+    const key = d.type + ':' + d.id + '|' + (state.ai ? state.ai.label : '');
+    const box = $('aiTake');
+    box.innerHTML = '<p class="ai-fit"><span class="ai-dots">Thinking</span></p>';
+    try {
+        let msg = 'Title details: ' + JSON.stringify(d.ctx);
+        if (state.ai) msg += `\n\nThe viewer's request was: "${state.ai.label}"`;
+        const r = await callGemini(TAKE_SYSTEM, msg);
+        aiTakeCache.set(key, r);
+        if (currentDetail !== d) return;
+        renderAiTake(r);
+    } catch (e) {
+        if (currentDetail !== d) return;
+        box.innerHTML = `<p class="ai-err">${escapeHTML(e.message)}</p><button class="btn ai" data-action="ai-take">Try again</button>`;
+    }
+}
+
+function renderAiTake(r) {
+    r = r || {};
+    const li = a => (Array.isArray(a) ? a : []).filter(Boolean).slice(0, 4).map(x => `<li>${escapeHTML(x)}</li>`).join('');
+    const watch = li(r.watch_if), skip = li(r.skip_if);
+    $('aiTake').innerHTML = `
+        ${r.fit ? `<p class="ai-fit">🎯 ${escapeHTML(r.fit)}</p>` : ''}
+        <p class="ai-pitch">${escapeHTML(r.pitch || 'No take available.')}</p>
+        ${(watch || skip) ? `<div class="ai-cols">
+            ${watch ? `<div><div class="watch-label">Watch it if</div><ul>${watch}</ul></div>` : ''}
+            ${skip ? `<div><div class="watch-label">Maybe skip if</div><ul>${skip}</ul></div>` : ''}
+        </div>` : ''}
+        ${r.heads_up ? `<p class="ai-heads">⚠ ${escapeHTML(r.heads_up)}</p>` : ''}
+        <p class="ai-disclaimer">AI-generated and may not be perfectly accurate.</p>`;
+}
+
+async function aiTweak() {
+    const tweak = $('aiTweakInput').value.trim();
+    const d = currentDetail;
+    if (!tweak || !d || !d.ctx) { $('aiTweakInput').focus(); return; }
+    closeDetails();
+    const c = d.ctx;
+    const request = `Find titles similar to "${c.title}" (${c.kind}, ${c.year}). ` +
+        `Its genres: ${c.genres.join(', ') || 'unknown'}. Its themes: ${c.themes.join(', ') || 'unknown'}. ` +
+        `Overview: ${c.overview}\n` +
+        `The viewer wants something similar, but: ${tweak}. Use "discover" mode. ` +
+        `Default media_type to "${d.type}" unless the tweak asks for the other kind.`;
+    await runAiSearch(request, {
+        display: `Like ${c.title}, but ${tweak}`,
+        fresh: true,
+        exclude: d.type + ':' + d.id
+    });
+}
+
+/* =========================================================
+   AI: NATURAL-LANGUAGE FINDER
+   ========================================================= */
+const aiCache = new Map();
+let aiSeq = 0;
+
+function finderSystemPrompt() {
+    const g = list => list.map(x => `${x.id}=${x.name}`).join(', ');
+    const providers = [...$('providerFilter').options].filter(o => o.value).map(o => o.text);
+    const today = new Date().toISOString().slice(0, 10);
+    return `You turn a viewer's request into search settings for The Movie Database (TMDB) in a movie and TV finder app.
+Today is ${today}. The viewer is on the ${state.mediaType === 'tv' ? 'TV' : 'Movies'} tab. Streaming region: ${state.region}.
+
+MOVIE genre ids: ${g(genreMap.movie)}
+TV genre ids: ${g(genreMap.tv)}
+Streaming services in this region: ${providers.join(', ') || 'unknown'}
+
+Reply with a single JSON object and nothing else:
+{
+  "mode": "discover" or "identify",
+  "media_type": "movie" or "tv",
+  "genres_include": [genre ids as numbers],
+  "genres_exclude": [genre ids as numbers],
+  "genre_match": "any" or "all",
+  "year_from": number or null,
+  "year_to": number or null,
+  "min_rating": 5, 6, 7, 8 or null,
+  "language": two-letter ISO 639-1 original-language code or null,
+  "min_runtime": minutes or null,
+  "max_runtime": minutes or null,
+  "keywords": [0-3 concrete TMDB-style theme keywords, e.g. "time loop", "heist", "zombie", "based on novel or book"],
+  "provider": exact name from the streaming list or null,
+  "monetization": "flatrate", "free", "ads", "rent", "buy" or null,
+  "sort": "popularity", "rating", "newest" or "oldest",
+  "titles": [{"title": string, "year": number or null, "media_type": "movie" or "tv"}],
+  "summary": "one short sentence (max 15 words) describing what you searched for"
+}
+
+Rules:
+- Use "identify" only when the viewer is trying to name one specific existing title they half-remember ("that movie where…", "what's the show about…"). Put up to 5 best guesses in "titles", most likely first. Otherwise use "discover" and leave "titles" empty.
+- media_type: "tv" if they mention shows, series, seasons or episodes; "movie" if they mention films or movies; otherwise the current tab.
+- Only use genre ids from the list matching media_type. TV uses combined genres like "Sci-Fi & Fantasy" and "Action & Adventure".
+- Map moods to genres (e.g. "feel-good" → Comedy, "scary" → Horror). Keywords must be concrete themes, not moods; use none if unsure.
+- genre_match "all" only for a clear blend (e.g. "sci-fi horror"); otherwise "any".
+- Be conservative: every filter narrows results, so set only what the request implies.
+- "recent" ≈ last 3 years, "90s" = 1990–1999, "classic" ≈ before 1990, "short" movie ≈ max 100 min. Runtime applies to movies only.
+- "best", "highly rated", "hidden gem", "underrated" → min_rating 7 and sort "rating".
+- If they name a service ("on Netflix"), set provider to the matching name and monetization "flatrate" unless they say free, rent or buy.
+- If a previous request is given and the new one reads like a follow-up ("older", "less scary", "only on Stan"), combine them.`;
+}
+
+function setAiStatus(text, isErr) {
+    const el = $('aiStatus');
+    el.className = 'ai-status' + (isErr ? ' err' : '');
+    el.innerHTML = text ? (isErr ? escapeHTML(text) : `<span class="ai-dots">${escapeHTML(text)}</span>`) : '';
+}
+function setAiBusy(busy, text) {
+    const btn = $('aiGo');
+    btn.disabled = busy;
+    btn.textContent = busy ? 'Thinking…' : 'Find it';
+    if (text !== undefined) setAiStatus(text);
+}
+
+async function runAiSearch(request, opts = {}) {
+    request = (request || '').trim();
+    if (!request) return;
+    if (!aiEnabled()) { openSettings(); return; }
+    const seq = ++aiSeq;
+    const label = opts.display || request;
+    $('aiInput').value = label;
+    if (state.view === 'watchlist') await enterBrowseView(state.mediaType);
+    $('aiBar').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setAiBusy(true, 'Working out what you want');
+    try {
+        const prev = !opts.fresh && state.ai ? state.ai : null;
+        let msg = `Request: ${request}`;
+        if (prev) msg += `\n\nPrevious request: ${prev.label}\nPrevious settings: ${JSON.stringify(prev.raw)}`;
+        const cacheKey = state.mediaType + '|' + state.region + '|' + msg;
+        let r = aiCache.get(cacheKey);
+        if (!r) {
+            r = await callGemini(finderSystemPrompt(), msg);
+            aiCache.set(cacheKey, r);
+        }
+        if (seq !== aiSeq) return;
+        setAiStatus('Matching that to TMDB');
+        await applyAiResult(r, label, opts);
+        if (seq === aiSeq) setAiStatus('');
+    } catch (e) {
+        if (seq === aiSeq) setAiStatus('⚠ ' + e.message, true);
+    } finally {
+        if (seq === aiSeq) setAiBusy(false);
+    }
+}
+
+async function resolveKeywordNames(list) {
+    const names = (Array.isArray(list) ? list : []).map(s => String(s).trim()).filter(Boolean).slice(0, 3);
+    const found = await Promise.all(names.map(async n => {
+        try {
+            const d = await fetchData(`/search/keyword?query=${encodeURIComponent(n)}&page=1`);
+            const res = d.results || [];
+            const k = res.find(x => x.name.toLowerCase() === n.toLowerCase()) || res[0];
+            return k ? { id: k.id, name: k.name } : null;
+        } catch (e) { return null; }
+    }));
+    const seen = new Set();
+    return found.filter(k => k && !seen.has(k.id) && seen.add(k.id));
+}
+
+async function resolveAiTitles(list, fallbackType) {
+    const picks = (Array.isArray(list) ? list : []).slice(0, 6);
+    const out = await Promise.all(picks.map(async t => {
+        const type = t.media_type === 'tv' ? 'tv' : t.media_type === 'movie' ? 'movie' : fallbackType;
+        const q = encodeURIComponent(String(t.title || '').trim());
+        if (!q) return null;
+        const yp = type === 'tv' ? 'first_air_date_year' : 'primary_release_year';
+        try {
+            let d = t.year ? await fetchData(`/search/${type}?query=${q}&${yp}=${Number(t.year)}&include_adult=false`) : null;
+            if (!d || !(d.results || []).length) d = await fetchData(`/search/${type}?query=${q}&include_adult=false`);
+            const hit = (d.results || [])[0];
+            return hit ? { ...hit, __type: type, __match: 'ai' } : null;
+        } catch (e) { return null; }
+    }));
+    const seen = new Set();
+    return out.filter(i => {
+        if (!i) return false;
+        const k = i.__type + ':' + i.id;
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+    });
+}
+
+async function applyAiResult(r, label, opts = {}) {
+    r = (r && typeof r === 'object') ? r : {};
+    const type = r.media_type === 'tv' ? 'tv' : r.media_type === 'movie' ? 'movie' : state.mediaType;
+
+    clearPersonMode();
+    state.query = ''; $('search').value = ''; $('searchWrap').classList.remove('has-text');
+    hidePeopleSuggestions();
+    clearAiMode();
+    await enterBrowseView(type);
+    resetFilterState();
+
+    let notice = '';
+    let titles = null;
+    if (r.mode === 'identify' && Array.isArray(r.titles) && r.titles.length) {
+        titles = await resolveAiTitles(r.titles, type);
+        if (!titles.length) {
+            titles = null;
+            notice = "The AI's title guesses weren't found on TMDB, so these match the description instead.";
+        }
+    }
+
+    let kw = [];
+    if (!titles) {
+        const valid = new Set((genreMap[type] || []).map(g => String(g.id)));
+        const ids = a => (Array.isArray(a) ? a : []).map(String).filter(id => valid.has(id));
+        state.genres = ids(r.genres_include).slice(0, 4);
+        state.exclude = ids(r.genres_exclude).filter(id => !state.genres.includes(id));
+        state.genreMatch = r.genre_match === 'all' && state.genres.length > 1 ? 'all' : 'any';
+
+        const maxYear = new Date().getFullYear() + 2;
+        const yr = v => { const n = Math.round(Number(v)); return n >= 1900 && n <= maxYear ? String(n) : ''; };
+        state.yearFrom = yr(r.year_from);
+        state.yearTo = yr(r.year_to);
+        if (state.yearFrom && state.yearTo && Number(state.yearFrom) > Number(state.yearTo)) {
+            [state.yearFrom, state.yearTo] = [state.yearTo, state.yearFrom];
+        }
+
+        const rating = Math.round(Number(r.min_rating));
+        state.rating = rating >= 5 && rating <= 9 ? String(rating) : '';
+
+        state.lang = /^[a-z]{2}$/.test(r.language || '') ? r.language : '';
+
+        if (type === 'movie') {
+            const min = Math.max(0, Math.round(Number(r.min_runtime) || 0));
+            const max = Math.round(Number(r.max_runtime) || 0);
+            if (min || max) state.runtime = `${min},${max > min ? max : 999}`;
+        }
+
+        if (r.provider) {
+            const want = String(r.provider).toLowerCase();
+            const opt = [...$('providerFilter').options].find(o => o.value && o.text.toLowerCase() === want)
+                     || [...$('providerFilter').options].find(o => o.value && (o.text.toLowerCase().includes(want) || want.includes(o.text.toLowerCase())));
+            if (opt) state.provider = opt.value;
+        }
+        if (['flatrate', 'free', 'ads', 'rent', 'buy'].includes(r.monetization)) state.monetization = r.monetization;
+
+        const sortMap = {
+            popularity: 'popularity.desc',
+            rating: 'vote_average.desc',
+            newest: type === 'tv' ? 'first_air_date.desc' : 'primary_release_date.desc',
+            oldest: type === 'tv' ? 'first_air_date.asc' : 'primary_release_date.asc'
+        };
+        state.sort = sortMap[r.sort] || 'popularity.desc';
+
+        kw = await resolveKeywordNames(r.keywords);
+    }
+
+    state.ai = { label, summary: String(r.summary || ''), raw: r };
+    state.aiTitles = titles;
+    state.aiKeywords = kw.map(k => k.id);
+    state.aiKeywordNames = kw.map(k => k.name);
+    state.aiExclude = opts.exclude || '';
+
+    syncFilterInputs();
+    savePrefs();
+    showAiBanner();
+    reset();
+    if (notice) showNotice(notice);
+}
+
+function showAiBanner() {
+    const el = $('aiBanner');
+    if (!state.ai) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    const sub = state.aiTitles
+        ? 'Best guesses for the title you described. Tap one to check it.'
+        : `${escapeHTML(state.ai.summary || 'Filters set from your request.')} Adjust anything in Filters.`;
+    const themes = state.aiKeywordNames.length
+        ? `<div>${state.aiKeywordNames.map(n => `<span class="ai-theme-tag">${escapeHTML(n)}</span>`).join('')}</div>` : '';
+    el.innerHTML = `
+        <div class="ai-banner-text">
+            <strong>✨ "${escapeHTML(state.ai.label)}"</strong>
+            <span>${sub}</span>
+            ${themes}
+        </div>
+        ${state.aiTitles ? '' : '<button class="person-clear soft" data-action="toggle-filters">☰ See filters</button>'}
+        <button class="person-clear" data-action="exit-ai">× Clear AI search</button>`;
+    el.style.display = 'flex';
+}
+
+function clearAiMode() {
+    state.ai = null;
+    state.aiTitles = null;
+    state.aiKeywords = [];
+    state.aiKeywordNames = [];
+    state.aiExclude = '';
+    showAiBanner();
+}
+
+/* =========================================================
+   AI: SETTINGS
+   ========================================================= */
+function updateAiUI() {
+    const on = aiEnabled();
+    $('aiBar').style.display = on && state.view !== 'watchlist' ? 'block' : 'none';
+    $('settingsBtn').classList.toggle('ai-on', on);
+    $('settingsBtn').title = on ? 'Settings (AI search is on)' : 'Settings';
+    const st = $('aiSetStatus');
+    st.className = 'set-status ' + (on ? 'on' : 'off');
+    st.textContent = on ? `AI search is on, using ${GEMINI_MODEL}.` : 'AI search is off.';
+    $('geminiRemoveBtn').style.display = on ? '' : 'none';
+    $('geminiSaveBtn').textContent = on ? 'Save changes' : 'Save and turn on AI';
+    if (!on) $('aiDetailSection').style.display = 'none';
+    else if (currentDetail && currentDetail.ctx) setupAiDetail();
+}
+
+function openSettings() {
+    $('geminiKeyInput').value = GEMINI_KEY;
+    $('geminiModelInput').value = GEMINI_MODEL;
+    $('geminiError').style.display = 'none';
+    updateAiUI();
+    $('settingsOverlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => (GEMINI_KEY ? $('geminiModelInput') : $('geminiKeyInput')).focus(), 30);
+}
+function closeSettings() {
+    $('settingsOverlay').style.display = 'none';
+    if ($('detailsOverlay').style.display !== 'flex') document.body.style.overflow = '';
+}
+
+async function saveGemini() {
+    const key = $('geminiKeyInput').value.trim();
+    const model = ($('geminiModelInput').value.trim() || DEFAULT_MODEL).replace(/^models\//, '');
+    const err = $('geminiError');
+    err.style.display = 'none';
+    if (!key) { err.textContent = 'Paste a Gemini API key first.'; err.style.display = 'block'; return; }
+    const btn = $('geminiSaveBtn');
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+        let res;
+        try {
+            res = await fetch(`${GEMINI_BASE}/models/${encodeURIComponent(model)}`, { headers: { 'x-goog-api-key': key } });
+        } catch (e) { throw new Error("Couldn't reach Google. Check your connection."); }
+        if (!res.ok) {
+            let detail = '';
+            try { const j = await res.json(); detail = (j.error && j.error.message) || ''; } catch (e) {}
+            if (res.status === 404) throw new Error(`Model "${model}" wasn't found. Check the model name.`);
+            if ([400, 401, 403].includes(res.status)) throw new Error('Google rejected that key. ' + detail);
+            throw new Error(detail || `Google returned ${res.status}.`);
+        }
+        GEMINI_KEY = key; GEMINI_MODEL = model;
+        store.set('gemini_api_key', key);
+        store.set('gemini_model', model);
+        aiCache.clear(); aiTakeCache.clear();
+        updateAiUI();
+        closeSettings();
+        setAiStatus('');
+        if (state.view !== 'watchlist') setTimeout(() => $('aiInput').focus(), 50);
+    } catch (e) {
+        err.textContent = e.message; err.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = aiEnabled() ? 'Save changes' : 'Save and turn on AI';
+    }
+}
+
+function removeGemini() {
+    GEMINI_KEY = ''; GEMINI_MODEL = DEFAULT_MODEL;
+    store.del('gemini_api_key'); store.del('gemini_model');
+    aiCache.clear(); aiTakeCache.clear();
+    $('geminiKeyInput').value = '';
+    $('geminiModelInput').value = DEFAULT_MODEL;
+    const hadAi = !!state.ai;
+    if (hadAi) { clearAiMode(); resetFilterState(); }
+    updateAiUI();
+    closeSettings();
+    if (hadAi && state.view !== 'watchlist') reset();
 }
 
 /* =========================================================
@@ -1460,8 +2146,10 @@ async function searchByPerson(id, name) {
     $('searchWrap').classList.remove('has-text');
     hidePeopleSuggestions();
     closeDetails();
+    clearAiMode();
     resetFilterState(false);
     showPersonBanner();
+    if (state.view === 'watchlist') await enterBrowseView(state.mediaType);
     reset();
     window.scrollTo({ top: $('hero').offsetHeight - 80, behavior: 'smooth' });
     try {
@@ -1573,6 +2261,8 @@ function readFilterInputs() {
 }
 
 function onFiltersChanged() {
+    // Changing filters while looking at AI title guesses means you've moved on from them.
+    if (state.aiTitles) clearAiMode();
     updateActiveCount();
     savePrefs();
     if (state.view === 'watchlist') { switchView(state.mediaType); return; }  // switchView resets for us
@@ -1585,29 +2275,19 @@ function clearAllFilters() {
     $('searchWrap').classList.remove('has-text');
     hidePeopleSuggestions();
     clearPersonMode();
+    clearAiMode();
     resetFilterState();
     if (state.view === 'watchlist') switchView(state.mediaType);
     else reset();
 }
 
-async function switchView(view) {
-    if (state.view === view) return;
+// Shows the Movies/TV browse view without loading results (caller decides when to reset()).
+async function enterBrowseView(view) {
     state.view = view;
     document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
-
-    if (view === 'watchlist') {
-        $('hero').style.display = 'none';
-        $('quickPicks').style.display = 'none';
-        $('filterPanel').hidden = true;
-        $('personBanner').style.display = 'none';
-        hidePeopleSuggestions();
-        loader.textContent = '';
-        renderWatchlist();
-        return;
-    }
-
     $('hero').style.display = 'flex';
     $('quickPicks').style.display = 'flex';
+    updateAiUI();
 
     const changedType = state.mediaType !== view;
     state.mediaType = view;
@@ -1620,11 +2300,35 @@ async function switchView(view) {
         $('search').placeholder = view === 'tv' ? 'Search shows, plots or people…' : 'Search titles, plots or people…';
         if (state.personId) showPersonBanner();
     }
+    if (state.ai) showAiBanner();
+}
+
+async function switchView(view) {
+    if (state.view === view) return;
+
+    if (view === 'watchlist') {
+        state.view = view;
+        document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+        $('hero').style.display = 'none';
+        $('quickPicks').style.display = 'none';
+        $('aiBar').style.display = 'none';
+        $('aiBanner').style.display = 'none';
+        $('filterPanel').hidden = true;
+        $('personBanner').style.display = 'none';
+        hidePeopleSuggestions();
+        loader.textContent = '';
+        renderWatchlist();
+        return;
+    }
+
+    if (state.mediaType !== view) clearAiMode();   // AI filters were built for the other type
+    await enterBrowseView(view);
     savePrefs();
     reset();
 }
 
 function applyPreset(kind) {
+    clearAiMode();
     resetFilterState();
     const yr = new Date().getFullYear();
     if (kind === 'trending') state.sort = 'popularity.desc';
@@ -1637,10 +2341,10 @@ function applyPreset(kind) {
     $('ratingFilter').value = state.rating;
     $('yearFrom').value = state.yearFrom; $('yearTo').value = state.yearTo;
     $('runtimeFilter').value = state.runtime;
-    if (kind === 'short' && state.mediaType === 'tv') showNotice('Runtime filtering only applies to movies — switch to the Movies tab for short picks.');
     state.query = ''; $('search').value = ''; $('searchWrap').classList.remove('has-text');
     hidePeopleSuggestions();
     onFiltersChanged();
+    if (kind === 'short' && state.mediaType === 'tv') showNotice('Runtime filtering only applies to movies — switch to the Movies tab for short picks.');
 }
 
 function applyDensity() {
@@ -1669,12 +2373,23 @@ $('search').addEventListener('input', e => {
     $('searchWrap').classList.toggle('has-text', !!e.target.value);
     if (state.query) {
         clearPersonMode();
+        if (state.ai) clearAiMode();
         if (state.view === 'watchlist') { switchView(state.mediaType); return; }
     } else hidePeopleSuggestions();
     syncFilterAvailability();
     if (state.query.length > 1 || state.query.length === 0) debouncedSearch();
     if (state.query.length > 2) debouncedPeople(); else hidePeopleSuggestions();
 });
+
+$('aiInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); runAiSearch($('aiInput').value); }
+});
+$('aiTweakInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); aiTweak(); }
+});
+$('geminiSaveBtn').addEventListener('click', saveGemini);
+['geminiKeyInput', 'geminiModelInput'].forEach(id =>
+    $(id).addEventListener('keydown', e => { if (e.key === 'Enter') saveGemini(); }));
 
 ['sort', 'ratingFilter', 'langFilter', 'providerFilter', 'monetizationFilter', 'runtimeFilter', 'yearFrom', 'yearTo']
     .forEach(id => $(id).addEventListener('change', () => { readFilterInputs(); onFiltersChanged(); }));
@@ -1711,6 +2426,11 @@ $('quickPicks').addEventListener('click', e => {
 
 // one delegated handler for the whole page
 document.addEventListener('click', e => {
+    if (e.target.id === 'settingsOverlay') { closeSettings(); return; }
+
+    const example = e.target.closest('[data-ai-example]');
+    if (example) { runAiSearch(example.dataset.aiExample, { fresh: true }); return; }
+
     const fav = e.target.closest('[data-fav]');
     if (fav) {
         e.stopPropagation();
@@ -1741,6 +2461,7 @@ document.addEventListener('click', e => {
         closeDetails();
         state.query = ''; $('search').value = ''; $('searchWrap').classList.remove('has-text');
         clearPersonMode();
+        clearAiMode();
         state.genres = [genreJump.dataset.genreJump]; state.exclude = [];
         renderGenreChips(); onFiltersChanged();
         $('filterPanel').hidden = false;
@@ -1758,6 +2479,23 @@ document.addEventListener('click', e => {
     if (!act) return;
     switch (act.dataset.action) {
         case 'close-details': closeDetails(); break;
+        case 'open-settings': openSettings(); break;
+        case 'close-settings': closeSettings(); break;
+        case 'remove-gemini': removeGemini(); break;
+        case 'forget-tmdb':
+            store.del('tmdb_api_key');
+            location.reload();
+            break;
+        case 'ai-go': runAiSearch($('aiInput').value); break;
+        case 'ai-take': aiTake(); break;
+        case 'ai-tweak': aiTweak(); break;
+        case 'exit-ai':
+            clearAiMode();
+            resetFilterState();
+            $('aiInput').value = '';
+            setAiStatus('');
+            reset();
+            break;
         case 'clear-search':
             state.query = ''; $('search').value = '';
             $('searchWrap').classList.remove('has-text');
@@ -1811,6 +2549,7 @@ $('personBanner').addEventListener('click', e => {
 // keyboard
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
+        if ($('settingsOverlay').style.display === 'flex') { closeSettings(); return; }
         if ($('detailsOverlay').style.display === 'flex') closeDetails();
         return;
     }
@@ -1819,8 +2558,12 @@ document.addEventListener('keydown', e => {
         document.activeElement.click();
     }
     if (typing) return;
+    if ($('settingsOverlay').style.display === 'flex' || $('detailsOverlay').style.display === 'flex') return;
     if (e.key === '/') { e.preventDefault(); $('search').focus(); }
     if (e.key.toLowerCase() === 'f') { $('filterPanel').hidden = !$('filterPanel').hidden; }
+    if (e.key.toLowerCase() === 'a' && aiEnabled() && state.view !== 'watchlist') {
+        e.preventDefault(); $('aiInput').focus();
+    }
 });
 
 function setupObserver() {
