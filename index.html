@@ -283,14 +283,23 @@
 
     .filter-grid { display: flex; gap: 12px; flex-wrap: wrap; }
     .filter-item { display: flex; flex-direction: column; flex: 1 1 140px; min-width: 130px; }
-    select {
+    select, input.num-input {
         padding: 10px 12px; background: var(--surface); color: var(--white);
         border: 1px solid var(--border); border-radius: 8px;
-        outline: none; cursor: pointer; font-size: 0.85rem; width: 100%;
+        outline: none; font-size: 0.85rem; width: 100%;
     }
-    select:focus { border-color: var(--accent); }
-    select:disabled { opacity: 0.4; cursor: not-allowed; }
+    select { cursor: pointer; }
+    select:focus, input.num-input:focus { border-color: var(--accent); }
+    select:disabled, input.num-input:disabled { opacity: 0.4; cursor: not-allowed; }
+    input.num-input::placeholder { color: var(--muted); }
+    optgroup { color: var(--accent-dim); font-style: normal; }
+    optgroup option { color: var(--white); }
     .year-range { display: flex; gap: 8px; }
+
+    .toggle-row { display: flex; gap: 10px 22px; flex-wrap: wrap; }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; color: var(--text); }
+    .toggle input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+    .toggle:hover { color: var(--white); }
 
     .filter-footer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
     .clear-filters-btn {
@@ -366,6 +375,7 @@
     .card:hover .card-info, .card:focus-within .card-info { opacity: 1; }
     .card-info h4 { color: var(--white); font-size: 0.95rem; margin-bottom: 4px; line-height: 1.2; }
     .card-info span { font-size: 0.78rem; color: var(--accent); font-weight: 700; }
+    .card-info small { font-size: 0.72rem; color: var(--gold); font-weight: 600; margin-top: 2px; }
     .card-badges { position: absolute; top: 8px; left: 8px; display: flex; gap: 5px; flex-wrap: wrap; max-width: calc(100% - 52px); z-index: 3; }
     .pill {
         padding: 3px 8px; border-radius: 5px; font-size: 0.62rem; font-weight: 800;
@@ -666,7 +676,7 @@
             <button class="ai-ex" data-ai-example="Feel-good 90s comedy">Feel-good 90s comedy</button>
             <button class="ai-ex" data-ai-example="Slow-burn sci-fi horror under 2 hours">Slow-burn sci-fi horror under 2 hours</button>
             <button class="ai-ex" data-ai-example="That movie where a soldier relives the same day fighting aliens">That movie where a soldier relives the same day…</button>
-            <button class="ai-ex" data-ai-example="Highly rated Korean thriller series on Netflix">Korean thriller series on Netflix</button>
+            <button class="ai-ex" data-ai-example="Big-budget Warner Bros. sci-fi">Big-budget Warner Bros. sci-fi</button>
         </div>
         <div class="ai-status" id="aiStatus"></div>
     </section>
@@ -678,6 +688,7 @@
         <button class="quick-chip" data-preset="hidden">Hidden gems</button>
         <button class="quick-chip" data-preset="classics">Pre-1990 classics</button>
         <button class="quick-chip" data-preset="short">Under 90 min</button>
+        <button class="quick-chip" data-preset="blockbusters">Blockbusters</button>
     </div>
 
     <div class="toolbar">
@@ -723,7 +734,7 @@
                         <option value="7">7+ Good</option>
                         <option value="6">6+ Above average</option>
                         <option value="5">5+ Average</option>
-                        <option value="5">4+ Average</option>
+                        <option value="4">4+ Below average</option>
                     </select>
                 </div>
                 <div class="filter-item">
@@ -766,6 +777,45 @@
         </div>
 
         <div class="filter-section">
+            <div class="filter-head">
+                <div class="filter-label">Votes &amp; money</div>
+                <span class="hint" id="moneyHint">Budget and box office are checked one title at a time, so they load a little slower. Titles with no figures on TMDB are left out.</span>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <div class="filter-label">Minimum votes</div>
+                    <input type="number" id="voteMinFilter" class="num-input" min="0" step="100" placeholder="e.g. 1000" inputmode="numeric">
+                </div>
+                <div class="filter-item" id="budgetFilterItem">
+                    <div class="filter-label">Min budget (US$ millions)</div>
+                    <input type="number" id="budgetMinFilter" class="num-input" min="0" step="5" placeholder="e.g. 100" inputmode="decimal">
+                </div>
+                <div class="filter-item" id="revenueFilterItem">
+                    <div class="filter-label">Min box office (US$ millions)</div>
+                    <input type="number" id="revenueMinFilter" class="num-input" min="0" step="10" placeholder="e.g. 500" inputmode="decimal">
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-head"><div class="filter-label">Studio &amp; age rating</div></div>
+            <div class="filter-grid">
+                <div class="filter-item" id="companyFilterItem">
+                    <div class="filter-label">Film company</div>
+                    <select id="companyFilter"></select>
+                </div>
+                <div class="filter-item" id="networkFilterItem">
+                    <div class="filter-label">TV network</div>
+                    <select id="networkFilter"></select>
+                </div>
+                <div class="filter-item" id="certFilterItem">
+                    <div class="filter-label">Max age rating <span id="certRegionLabel"></span></div>
+                    <select id="certFilter"><option value="">Any age rating</option></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
             <div class="filter-head"><div class="filter-label">Where you watch</div></div>
             <div class="filter-grid">
                 <div class="filter-item">
@@ -800,6 +850,15 @@
                         <option value="buy">Buy</option>
                     </select>
                 </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-head"><div class="filter-label">Show</div></div>
+            <div class="toggle-row">
+                <label class="toggle"><input type="checkbox" id="releasedOnlyFilter"> Released only (hide upcoming)</label>
+                <label class="toggle"><input type="checkbox" id="hideSavedFilter"> Hide titles already in my list</label>
+                <label class="toggle"><input type="checkbox" id="posterOnlyFilter"> Only titles with a poster</label>
             </div>
         </div>
 
@@ -843,6 +902,87 @@ const NO_POSTER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 const NO_FACE = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="92" height="138"><rect width="92" height="138" fill="#333"/><text x="46" y="72" fill="#666" font-family="sans-serif" font-size="11" text-anchor="middle">No photo</text></svg>');
 
+/* ---------- studios & networks (TMDB company / network ids; "|" = any of) ---------- */
+const COMPANY_GROUPS = [
+    ['Major studios', [
+        ['Walt Disney Pictures', '2'],
+        ['Warner Bros. Pictures', '174'],
+        ['Universal Pictures', '33'],
+        ['Paramount Pictures', '4'],
+        ['Sony / Columbia / TriStar', '5|34|559'],
+        ['20th Century (Fox & Studios)', '25|127928'],
+        ['Lionsgate / Summit', '1632|491'],
+        ['Metro-Goldwyn-Mayer (MGM)', '21']
+    ]],
+    ['Franchise & production', [
+        ['Marvel Studios', '420'],
+        ['Lucasfilm', '1'],
+        ['Legendary', '923'],
+        ['New Line Cinema', '12'],
+        ['Amblin Entertainment', '56'],
+        ['DreamWorks Pictures', '7'],
+        ['Blumhouse', '3172'],
+        ['Bad Robot', '11461'],
+        ['Village Roadshow', '79']
+    ]],
+    ['Animation', [
+        ['Pixar', '3'],
+        ['Walt Disney Animation Studios', '6125'],
+        ['DreamWorks Animation', '521'],
+        ['Illumination', '6704'],
+        ['Sony Pictures Animation', '2251'],
+        ['Studio Ghibli', '10342'],
+        ['Laika', '11537'],
+        ['Aardman', '297'],
+        ['Toei Animation', '5542']
+    ]],
+    ['Indie & prestige', [
+        ['A24', '41077'],
+        ['Neon', '90733'],
+        ['Searchlight Pictures', '43|127929'],
+        ['Focus Features', '10146'],
+        ['Annapurna Pictures', '13184'],
+        ['Miramax', '14'],
+        ['Working Title', '10163']
+    ]],
+    ['International', [
+        ['StudioCanal', '694'],
+        ['Toho', '882']
+    ]]
+];
+const NETWORK_GROUPS = [
+    ['Streaming originals', [
+        ['Netflix', '213'],
+        ['Prime Video', '1024'],
+        ['Disney+', '2739'],
+        ['Apple TV+', '2552'],
+        ['HBO / Max', '49|3186'],
+        ['Hulu', '453'],
+        ['Paramount+', '4330'],
+        ['Peacock', '3353'],
+        ['Crunchyroll', '1112']
+    ]],
+    ['US TV', [
+        ['ABC (US)', '2'],
+        ['NBC', '6'],
+        ['CBS', '16'],
+        ['FOX', '19'],
+        ['AMC', '174'],
+        ['FX', '88'],
+        ['Showtime', '67'],
+        ['Starz', '318'],
+        ['Adult Swim', '80'],
+        ['Cartoon Network', '56'],
+        ['Nickelodeon', '13']
+    ]],
+    ['UK TV', [
+        ['BBC One', '4'],
+        ['BBC Two', '332'],
+        ['Channel 4', '26'],
+        ['ITV', '9']
+    ]]
+];
+
 /* ---------- storage (safe in sandboxed frames) ---------- */
 const store = (() => {
     let ok = true;
@@ -874,6 +1014,15 @@ const state = {
     rating: '', lang: '', runtime: '',
     region: store.get('tmdb_region') || 'AU',
     provider: '', monetization: '',
+    voteMin: '',              // minimum vote count
+    budgetMin: '',            // US$ millions (movies)
+    revenueMin: '',           // US$ millions (movies)
+    company: '',              // TMDB company id(s), movies
+    network: '',              // TMDB network id(s), TV
+    cert: '',                 // max certification for the region, movies
+    releasedOnly: false,
+    hideSaved: false,
+    posterOnly: false,
     personId: '', personName: '', personProfile: '', personDept: '', personRole: 'cast',
     density: store.get('cs_density') || 'comfy',
     // AI mode
@@ -884,6 +1033,10 @@ const state = {
     aiExclude: ''             // 'type:id' to hide (e.g. the title you asked "more like")
 };
 
+const PREF_KEYS = ['sort', 'genres', 'exclude', 'genreMatch', 'yearFrom', 'yearTo', 'rating', 'lang', 'runtime',
+    'provider', 'monetization', 'mediaType', 'voteMin', 'budgetMin', 'revenueMin', 'company', 'network', 'cert',
+    'releasedOnly', 'hideSaved', 'posterOnly'];
+
 let page = 1, totalPages = 1, totalResults = 0, isLoading = false, loadToken = 0;
 let seenIds = new Set();
 let renderedItems = [];
@@ -891,6 +1044,7 @@ let keywordIds = [];
 let heroPool = [], heroItem = null, currentDetail = null;
 const genreMap = { movie: [], tv: [] };
 const genreName = {};
+let certData = null;
 let lastFocused = null;
 
 /* ---------- dom ---------- */
@@ -905,6 +1059,9 @@ function escapeHTML(s) {
 const poster = p => p ? IMG + p : NO_POSTER;
 const face = p => p ? IMG + p : NO_FACE;
 const yearOf = d => (d || '').split('-')[0] || '';
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const posNum = v => { const n = Number(v); return v !== '' && v != null && isFinite(n) && n > 0 ? String(n) : ''; };
+const fmtMoney = n => n >= 1e9 ? '$' + (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B' : '$' + Math.round(n / 1e6) + 'M';
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
 /* ---------- fetch with cache + real errors ---------- */
@@ -921,7 +1078,7 @@ async function fetchData(path, useCache = true) {
     const data = await res.json();
     if (useCache) {
         cache.set(url, data);
-        if (cache.size > 250) cache.delete(cache.keys().next().value);
+        if (cache.size > 800) cache.delete(cache.keys().next().value);
     }
     return data;
 }
@@ -1016,6 +1173,8 @@ async function initializeUI() {
     restorePrefs();
     $('regionFilter').value = state.region;
     populateYears();
+    buildGroupedOptions($('companyFilter'), COMPANY_GROUPS, 'Any company');
+    buildGroupedOptions($('networkFilter'), NETWORK_GROUPS, 'Any network');
     buildSortOptions();
     applyDensity();
     updateDeepBtn();
@@ -1027,7 +1186,8 @@ async function initializeUI() {
         [...genreMap.movie, ...genreMap.tv].forEach(g => { genreName[g.id] = g.name; });
     } catch (e) { showNotice('Genres could not be loaded: ' + e.message); }
     renderGenreChips();
-    await populateProviders();
+    await Promise.all([populateProviders(), populateCerts()]);
+    syncFilterInputs();
     loadHero();
     reset();
     setupObserver();
@@ -1036,8 +1196,7 @@ async function initializeUI() {
 function restorePrefs() {
     try {
         const saved = JSON.parse(store.get('cs_filters') || '{}');
-        ['sort', 'genres', 'exclude', 'genreMatch', 'yearFrom', 'yearTo', 'rating', 'lang', 'runtime', 'provider', 'monetization', 'mediaType']
-            .forEach(k => { if (saved[k] !== undefined) state[k] = saved[k]; });
+        PREF_KEYS.forEach(k => { if (saved[k] !== undefined) state[k] = saved[k]; });
         state.view = state.mediaType;
     } catch (e) {}
     document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === state.view));
@@ -1045,8 +1204,9 @@ function restorePrefs() {
 }
 
 function savePrefs() {
-    const { sort, genres, exclude, genreMatch, yearFrom, yearTo, rating, lang, runtime, provider, monetization, mediaType } = state;
-    store.set('cs_filters', JSON.stringify({ sort, genres, exclude, genreMatch, yearFrom, yearTo, rating, lang, runtime, provider, monetization, mediaType }));
+    const out = {};
+    PREF_KEYS.forEach(k => { out[k] = state[k]; });
+    store.set('cs_filters', JSON.stringify(out));
 }
 
 function populateYears() {
@@ -1057,6 +1217,13 @@ function populateYears() {
     from.innerHTML = '<option value="">From</option>' + opts;
     to.innerHTML = '<option value="">To</option>' + opts;
     from.value = state.yearFrom; to.value = state.yearTo;
+}
+
+function buildGroupedOptions(sel, groups, anyLabel) {
+    sel.innerHTML = `<option value="">${escapeHTML(anyLabel)}</option>` + groups.map(([group, list]) =>
+        `<optgroup label="${escapeHTML(group)}">` +
+        list.map(([name, ids]) => `<option value="${ids}">${escapeHTML(name)}</option>`).join('') +
+        '</optgroup>').join('');
 }
 
 // Makes sure a select can show a value that isn't one of its preset options (AI can set any runtime/language).
@@ -1096,11 +1263,20 @@ function buildSortOptions() {
     sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
     if (!opts.some(o => o[0] === state.sort)) state.sort = 'popularity.desc';
     sel.value = state.sort;
-    $('runtimeFilterItem').style.display = state.mediaType === 'tv' ? 'none' : 'flex';
+    syncTypeVisibility();
     $('ratingFilter').value = state.rating;
     ensureOption($('langFilter'), state.lang, String(state.lang).toUpperCase());
     ensureOption($('runtimeFilter'), state.runtime, runtimeLabel(state.runtime));
     $('monetizationFilter').value = state.monetization;
+}
+
+// Some filters only exist for movies (runtime, money, studio, age rating) or for TV (network).
+function syncTypeVisibility() {
+    const isTV = state.mediaType === 'tv';
+    ['runtimeFilterItem', 'budgetFilterItem', 'revenueFilterItem', 'companyFilterItem', 'certFilterItem']
+        .forEach(id => { $(id).style.display = isTV ? 'none' : 'flex'; });
+    $('networkFilterItem').style.display = isTV ? 'flex' : 'none';
+    $('moneyHint').style.display = isTV ? 'none' : '';
 }
 
 // Push the whole state back into the filter inputs (used after AI sets filters).
@@ -1113,6 +1289,15 @@ function syncFilterInputs() {
     ensureOption($('runtimeFilter'), state.runtime, runtimeLabel(state.runtime));
     $('providerFilter').value = state.provider;
     $('monetizationFilter').value = state.monetization;
+    $('voteMinFilter').value = state.voteMin;
+    $('budgetMinFilter').value = state.budgetMin;
+    $('revenueMinFilter').value = state.revenueMin;
+    $('companyFilter').value = state.company;
+    $('networkFilter').value = state.network;
+    $('certFilter').value = state.cert;
+    $('releasedOnlyFilter').checked = !!state.releasedOnly;
+    $('hideSavedFilter').checked = !!state.hideSaved;
+    $('posterOnlyFilter').checked = !!state.posterOnly;
     renderGenreChips();
     updateActiveCount();
 }
@@ -1136,6 +1321,23 @@ async function populateProviders() {
         if ([...sel.options].some(o => o.value === String(state.provider))) sel.value = state.provider;
         else { state.provider = ''; sel.value = ''; }
     } catch (e) { /* providers are optional */ }
+}
+
+// Age ratings for the chosen region (G, PG, M, MA15+, R18+ in AU, etc.)
+async function populateCerts() {
+    const sel = $('certFilter');
+    sel.innerHTML = '<option value="">Any age rating</option>';
+    $('certRegionLabel').textContent = `(${state.region})`;
+    try {
+        if (!certData) certData = (await fetchData('/certification/movie/list')).certifications || {};
+        const list = (certData[state.region] || [])
+            .filter(c => c.certification)
+            .sort((a, b) => a.order - b.order);
+        sel.innerHTML += list.map(c =>
+            `<option value="${escapeHTML(c.certification)}" title="${escapeHTML(c.meaning || '')}">${escapeHTML(c.certification)} and below</option>`).join('');
+    } catch (e) { /* optional */ }
+    if ([...sel.options].some(o => o.value === state.cert)) sel.value = state.cert;
+    else { state.cert = ''; sel.value = ''; }
 }
 
 /* =========================================================
@@ -1185,7 +1387,9 @@ function discoverUrl(pageNum, extra) {
     if (state.rating) { p.set('vote_average.gte', state.rating); p.set('vote_count.gte', t === 'tv' ? 30 : 80); }
     if (state.lang) p.set('with_original_language', state.lang);
     if (state.yearFrom) p.set(dateField + '.gte', state.yearFrom + '-01-01');
-    if (state.yearTo) p.set(dateField + '.lte', state.yearTo + '-12-31');
+    let lte = state.yearTo ? state.yearTo + '-12-31' : '';
+    if (state.releasedOnly) { const today = todayISO(); if (!lte || today < lte) lte = today; }
+    if (lte) p.set(dateField + '.lte', lte);
     if (t !== 'tv' && state.runtime) {
         const [min, max] = state.runtime.split(',');
         if (Number(min) > 0) p.set('with_runtime.gte', min);
@@ -1196,6 +1400,14 @@ function discoverUrl(pageNum, extra) {
     if (state.monetization) p.set('with_watch_monetization_types', state.monetization);
     if ((state.sort.startsWith('vote_average') || state.sort.startsWith('revenue')) && !state.rating) {
         p.set('vote_count.gte', t === 'tv' ? 100 : 300);
+    }
+    // A user-set vote minimum always wins over the defaults above.
+    if (state.voteMin) p.set('vote_count.gte', state.voteMin);
+    if (t !== 'tv' && state.company) p.set('with_companies', state.company);
+    if (t === 'tv' && state.network) p.set('with_networks', state.network);
+    if (t !== 'tv' && state.cert) {
+        p.set('certification_country', state.region);
+        p.set('certification.lte', state.cert);
     }
     if (state.personId) {
         p.set(state.personRole === 'cast' ? 'with_cast' : 'with_people', state.personId);
@@ -1216,10 +1428,13 @@ function passesClientFilters(item) {
     }
     if (state.exclude.length && state.exclude.some(g => ids.includes(g))) return false;
     if (state.rating && (item.vote_average || 0) < Number(state.rating)) return false;
+    if (state.voteMin && (item.vote_count || 0) < Number(state.voteMin)) return false;
     if (state.lang && item.original_language !== state.lang) return false;
-    const y = Number(yearOf(item.release_date || item.first_air_date));
+    const date = item.release_date || item.first_air_date || '';
+    const y = Number(yearOf(date));
     if (state.yearFrom && (!y || y < Number(state.yearFrom))) return false;
     if (state.yearTo && (!y || y > Number(state.yearTo))) return false;
+    if (state.releasedOnly && (!date || date > todayISO())) return false;
     return true;
 }
 
@@ -1227,10 +1442,29 @@ const searchOnlyFilters = () => state.query && !state.personId;
 
 function syncFilterAvailability() {
     const searching = searchOnlyFilters();
-    ['sort', 'runtimeFilter', 'providerFilter', 'monetizationFilter'].forEach(id => { $(id).disabled = searching; });
+    ['sort', 'runtimeFilter', 'providerFilter', 'monetizationFilter', 'companyFilter', 'networkFilter', 'certFilter']
+        .forEach(id => { $(id).disabled = searching; });
     $('filterHint').textContent = searching
-        ? 'While searching, results are ranked by relevance — sort, runtime and streaming filters pause until you clear the search.'
+        ? 'While searching, results are ranked by relevance — sort, runtime, studio, age rating and streaming filters pause until you clear the search.'
         : '';
+}
+
+/* ---- budget / box office: TMDB can't filter these, so each title's details are checked ---- */
+const needsDetailCheck = () => state.mediaType === 'movie' && !!(state.budgetMin || state.revenueMin);
+
+async function applyDetailFilters(items) {
+    const minB = Number(state.budgetMin || 0) * 1e6;
+    const minR = Number(state.revenueMin || 0) * 1e6;
+    const checked = await Promise.all(items.map(async i => {
+        if ((i.__type || state.mediaType) !== 'movie') return null;
+        try {
+            const d = await fetchData(`/movie/${i.id}`);
+            if (minB && (d.budget || 0) < minB) return null;
+            if (minR && (d.revenue || 0) < minR) return null;
+            return { ...i, __budget: d.budget || 0, __revenue: d.revenue || 0 };
+        } catch (e) { return null; }
+    }));
+    return checked.filter(Boolean);
 }
 
 /* =========================================================
@@ -1256,32 +1490,52 @@ function clearSkeletons() {
     grid.querySelectorAll('.skeleton').forEach(el => el.remove());
 }
 
+async function fetchPageItems() {
+    if (state.aiTitles) return fetchAiTitles();
+    if (state.personId && state.mediaType === 'tv') return fetchPersonTV();
+    if (state.query && !state.personId) return fetchSearchPage();
+    return fetchDiscoverPage();
+}
+
 async function load() {
     if (isLoading || state.view === 'watchlist' || page > totalPages) return;
     const token = loadToken;
     isLoading = true;
+    let keepGoing = false;
     loader.textContent = 'Loading…';
     try {
-        let items;
-        if (state.aiTitles) items = fetchAiTitles();
-        else if (state.personId && state.mediaType === 'tv') items = await fetchPersonTV();
-        else if (state.query && !state.personId) items = await fetchSearchPage();
-        else items = await fetchDiscoverPage();
+        let items = await fetchPageItems();
+
+        // Budget / box office filtering thins pages out, so scan a few more before showing anything.
+        if (needsDetailCheck()) {
+            loader.textContent = 'Checking budgets…';
+            items = await applyDetailFilters(items);
+            let extra = 0;
+            while (items.length < 8 && page < totalPages && extra < 4 && token === loadToken) {
+                page++; extra++;
+                items = items.concat(await applyDetailFilters(await fetchPageItems()));
+            }
+        }
 
         if (token !== loadToken) return;   // a newer request already owns the grid
         clearSkeletons();
+        grid.querySelectorAll('.state-box').forEach(el => el.remove());
+        const saved = state.hideSaved ? new Set(getWatchlist().map(i => i.type + ':' + i.id)) : null;
         const fresh = items.filter(i => {
             const key = (i.__type || state.mediaType) + ':' + i.id;
             if (seenIds.has(key) || key === state.aiExclude) return false;
+            if (saved && saved.has(key)) return false;
+            if (state.posterOnly && !i.poster_path) return false;
             seenIds.add(key); return true;
         });
         renderedItems.push(...fresh);
         renderCards(fresh);
 
-        if (page === 1 && renderedItems.length === 0) renderEmptyState();
         page++;
+        if (renderedItems.length === 0) renderEmptyState();
         updateResultCount();
-        loader.textContent = page > totalPages ? (renderedItems.length ? "That's everything" : '') : 'Scroll for more';
+        loader.textContent = page > totalPages ? (renderedItems.length ? "That's everything" : '') : (renderedItems.length ? 'Scroll for more' : '');
+        keepGoing = renderedItems.length > 0 && page <= totalPages;
     } catch (e) {
         if (token !== loadToken) return;
         clearSkeletons();
@@ -1292,6 +1546,11 @@ async function load() {
         loader.textContent = '';
     }
     isLoading = false;
+    // If filtering left the loader on screen, the observer won't fire again — keep loading.
+    if (keepGoing && token === loadToken) {
+        const r = loader.getBoundingClientRect();
+        if (r.top < window.innerHeight + 400) setTimeout(() => { if (token === loadToken) load(); }, 80);
+    }
 }
 
 async function fetchDiscoverPage() {
@@ -1373,6 +1632,7 @@ async function fetchPersonTV() {
     items = items.filter(passesClientFilters);
 
     if (state.sort.startsWith('vote_average')) items.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+    else if (state.sort === 'vote_count.desc') items.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
     else if (state.sort === 'first_air_date.desc') items.sort((a, b) => (b.first_air_date || '').localeCompare(a.first_air_date || ''));
     else if (state.sort === 'first_air_date.asc') items.sort((a, b) => (a.first_air_date || '').localeCompare(b.first_air_date || ''));
     else if (state.sort === 'name.asc') items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -1397,6 +1657,9 @@ function renderCards(items) {
             ? '<span class="pill plot">Plot match</span>'
             : item.__match === 'theme' ? '<span class="pill theme">Theme</span>'
             : item.__match === 'ai' ? '<span class="pill ai">AI guess</span>' : '';
+        const money = [];
+        if (item.__budget) money.push(fmtMoney(item.__budget) + ' budget');
+        if (item.__revenue) money.push(fmtMoney(item.__revenue) + ' box office');
         return `
         <article class="card" data-id="${item.id}" data-type="${type}" tabindex="0" role="button" aria-label="${escapeHTML(title)}">
             <div class="card-badges">
@@ -1407,7 +1670,8 @@ function renderCards(items) {
             <img src="${poster(item.poster_path)}" alt="" loading="lazy" onerror="this.src='${NO_POSTER}'">
             <div class="card-info">
                 <h4>${escapeHTML(title)}</h4>
-                <span>${year} · ⭐ ${rating}</span>
+                <span>${year} · ⭐ ${rating}${item.vote_count ? ` · ${item.vote_count.toLocaleString()} votes` : ''}</span>
+                ${money.length ? `<small>${money.join(' · ')}</small>` : ''}
             </div>
         </article>`;
     }).join('');
@@ -1416,12 +1680,17 @@ function renderCards(items) {
 
 function renderEmptyState() {
     const what = state.mediaType === 'tv' ? 'shows' : 'movies';
-    let hint = 'Widen the year range, drop a genre, or clear the streaming service.';
+    let hint = 'Widen the year range, drop a genre, lower the vote minimum, or clear the studio or streaming service.';
+    let more = '';
     if (state.personId) hint = `Nothing from ${escapeHTML(state.personName)} matches these filters. Try the ${state.mediaType === 'tv' ? 'Movies' : 'TV'} tab or clear a filter.`;
     else if (state.query) hint = `No ${what} match "${escapeHTML(state.query)}" with these filters.${state.deep ? '' : ' Turn on plot search to match descriptions too.'}`;
     else if (state.ai) hint = "The AI's filters were too narrow. Loosen them in Filters, or rephrase your request.";
+    if (needsDetailCheck()) {
+        hint = 'No titles checked so far meet the budget or box office minimum. Lower it, sort by "Biggest box office", or keep checking.';
+        if (page <= totalPages) more = '<button class="btn" data-action="load-more">Check more titles</button> ';
+    }
     grid.innerHTML = `<div class="state-box"><strong>Nothing here yet</strong>${hint}
-        <br><button class="btn primary" data-action="clear-filters">Clear filters</button></div>`;
+        <br>${more}<button class="btn primary" data-action="clear-filters">Clear filters</button></div>`;
     loader.textContent = '';
 }
 
@@ -1430,7 +1699,7 @@ function updateResultCount() {
     if (state.view === 'watchlist') { el.innerHTML = `<strong>${getWatchlist().length}</strong> saved`; return; }
     if (!renderedItems.length) { el.textContent = ''; return; }
     const label = state.mediaType === 'tv' ? 'shows' : 'movies';
-    const approx = totalResults > renderedItems.length ? ` of about ${totalResults.toLocaleString()}` : '';
+    const approx = (totalResults > renderedItems.length && !needsDetailCheck()) ? ` of about ${totalResults.toLocaleString()}` : '';
     let ctx = '';
     if (state.personId) ctx = ` with ${state.personName}`;
     else if (state.query) ctx = ` for "${state.query}"`;
@@ -1823,14 +2092,17 @@ let aiSeq = 0;
 
 function finderSystemPrompt() {
     const g = list => list.map(x => `${x.id}=${x.name}`).join(', ');
+    const names = groups => groups.flatMap(([, list]) => list.map(([n]) => n)).join(', ');
     const providers = [...$('providerFilter').options].filter(o => o.value).map(o => o.text);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayISO();
     return `You turn a viewer's request into search settings for The Movie Database (TMDB) in a movie and TV finder app.
 Today is ${today}. The viewer is on the ${state.mediaType === 'tv' ? 'TV' : 'Movies'} tab. Streaming region: ${state.region}.
 
 MOVIE genre ids: ${g(genreMap.movie)}
 TV genre ids: ${g(genreMap.tv)}
 Streaming services in this region: ${providers.join(', ') || 'unknown'}
+Film companies (movies only): ${names(COMPANY_GROUPS)}
+TV networks (TV only): ${names(NETWORK_GROUPS)}
 
 Reply with a single JSON object and nothing else:
 {
@@ -1842,13 +2114,17 @@ Reply with a single JSON object and nothing else:
   "year_from": number or null,
   "year_to": number or null,
   "min_rating": 4, 5, 6, 7, 8 or null,
+  "min_votes": number or null,
   "language": two-letter ISO 639-1 original-language code or null,
   "min_runtime": minutes or null,
   "max_runtime": minutes or null,
+  "min_budget_millions": number (US$ millions, movies only) or null,
+  "studio": exact name from the film company list or null,
+  "network": exact name from the TV network list or null,
   "keywords": [0-3 concrete TMDB-style theme keywords, e.g. "time loop", "heist", "zombie", "based on novel or book"],
   "provider": exact name from the streaming list or null,
   "monetization": "flatrate", "free", "ads", "rent", "buy" or null,
-  "sort": "popularity", "rating", "newest" or "oldest",
+  "sort": "popularity", "rating", "newest", "oldest" or "box_office",
   "titles": [{"title": string, "year": number or null, "media_type": "movie" or "tv"}],
   "summary": "one short sentence (max 15 words) describing what you searched for"
 }
@@ -1862,7 +2138,10 @@ Rules:
 - Be conservative: every filter narrows results, so set only what the request implies.
 - "recent" ≈ last 3 years, "90s" = 1990–1999, "classic" ≈ before 1990, "short" movie ≈ max 100 min. Runtime applies to movies only.
 - "best", "highly rated", "hidden gem", "underrated" → min_rating 7 and sort "rating".
-- If they name a service ("on Netflix"), set provider to the matching name and monetization "flatrate" unless they say free, rent or buy.
+- "well-known", "mainstream", "popular" → min_votes 1000. Leave min_votes null for "obscure" or "hidden gem".
+- "blockbuster", "big-budget" → min_budget_millions 100 (movies only). "box office hits" → sort "box_office".
+- If they name a film studio ("Pixar", "A24", "Warner Bros."), set studio. If they name a channel or network for shows ("HBO shows", "BBC dramas", "Netflix originals"), set network.
+- If they want to watch it on a service ("on Netflix", "streaming on Stan"), set provider to the matching name and monetization "flatrate" unless they say free, rent or buy.
 - If a previous request is given and the new one reads like a follow-up ("older", "less scary", "only on Stan"), combine them.`;
 }
 
@@ -1946,6 +2225,16 @@ async function resolveAiTitles(list, fallbackType) {
     });
 }
 
+// Match a name the AI gave against a select's option labels.
+function matchOption(selId, name) {
+    if (!name) return '';
+    const want = String(name).toLowerCase().trim();
+    const opts = [...$(selId).options].filter(o => o.value);
+    const o = opts.find(x => x.text.toLowerCase() === want)
+        || opts.find(x => x.text.toLowerCase().includes(want) || want.includes(x.text.toLowerCase()));
+    return o ? o.value : '';
+}
+
 async function applyAiResult(r, label, opts = {}) {
     r = (r && typeof r === 'object') ? r : {};
     const type = r.media_type === 'tv' ? 'tv' : r.media_type === 'movie' ? 'movie' : state.mediaType;
@@ -1984,7 +2273,10 @@ async function applyAiResult(r, label, opts = {}) {
         }
 
         const rating = Math.round(Number(r.min_rating));
-        state.rating = rating >= 5 && rating <= 9 ? String(rating) : '';
+        state.rating = rating >= 4 && rating <= 9 ? String(rating) : '';
+
+        const votes = Math.round(Number(r.min_votes));
+        state.voteMin = votes > 0 ? String(votes) : '';
 
         state.lang = /^[a-z]{2}$/.test(r.language || '') ? r.language : '';
 
@@ -1992,21 +2284,22 @@ async function applyAiResult(r, label, opts = {}) {
             const min = Math.max(0, Math.round(Number(r.min_runtime) || 0));
             const max = Math.round(Number(r.max_runtime) || 0);
             if (min || max) state.runtime = `${min},${max > min ? max : 999}`;
+            const budget = Math.round(Number(r.min_budget_millions) || 0);
+            if (budget > 0) state.budgetMin = String(budget);
+            state.company = matchOption('companyFilter', r.studio);
+        } else {
+            state.network = matchOption('networkFilter', r.network);
         }
 
-        if (r.provider) {
-            const want = String(r.provider).toLowerCase();
-            const opt = [...$('providerFilter').options].find(o => o.value && o.text.toLowerCase() === want)
-                     || [...$('providerFilter').options].find(o => o.value && (o.text.toLowerCase().includes(want) || want.includes(o.text.toLowerCase())));
-            if (opt) state.provider = opt.value;
-        }
+        if (r.provider) state.provider = matchOption('providerFilter', r.provider);
         if (['flatrate', 'free', 'ads', 'rent', 'buy'].includes(r.monetization)) state.monetization = r.monetization;
 
         const sortMap = {
             popularity: 'popularity.desc',
             rating: 'vote_average.desc',
             newest: type === 'tv' ? 'first_air_date.desc' : 'primary_release_date.desc',
-            oldest: type === 'tv' ? 'first_air_date.asc' : 'primary_release_date.asc'
+            oldest: type === 'tv' ? 'first_air_date.asc' : 'primary_release_date.asc',
+            box_office: type === 'tv' ? 'popularity.desc' : 'revenue.desc'
         };
         state.sort = sortMap[r.sort] || 'popularity.desc';
 
@@ -2221,28 +2514,36 @@ function hidePeopleSuggestions() {
 /* =========================================================
    FILTER PLUMBING
    ========================================================= */
+function activeFilterCount() {
+    const movie = state.mediaType === 'movie';
+    return state.genres.length + state.exclude.length +
+        [state.yearFrom, state.yearTo, state.rating, state.lang, state.provider, state.monetization,
+         state.voteMin, state.releasedOnly, state.hideSaved, state.posterOnly].filter(Boolean).length +
+        (movie
+            ? [state.runtime, state.budgetMin, state.revenueMin, state.company, state.cert].filter(Boolean).length
+            : (state.network ? 1 : 0));
+}
+
 function updateActiveCount() {
-    const count = state.genres.length + state.exclude.length +
-        [state.yearFrom, state.yearTo, state.rating, state.lang, state.provider, state.monetization, state.runtime].filter(Boolean).length;
+    const count = activeFilterCount();
     const badge = $('activeCount');
     if (count > 0) { badge.style.display = 'inline-flex'; badge.textContent = count; }
     else badge.style.display = 'none';
     $('filterBtn').classList.toggle('on', count > 0);
 }
 
-function resetFilterState(resetSort = true) {
+// Clears filters. "Hide saved" and "poster only" are display preferences, so they stay unless clearDisplay is true.
+function resetFilterState(resetSort = true, clearDisplay = false) {
     if (resetSort) state.sort = 'popularity.desc';
     state.genres = []; state.exclude = []; state.genreMatch = 'any';
     state.yearFrom = ''; state.yearTo = '';
     state.rating = ''; state.lang = ''; state.runtime = '';
     state.provider = ''; state.monetization = '';
-    $('sort').value = state.sort;
-    $('yearFrom').value = ''; $('yearTo').value = '';
-    $('ratingFilter').value = ''; $('langFilter').value = '';
-    $('providerFilter').value = ''; $('monetizationFilter').value = '';
-    $('runtimeFilter').value = '';
-    renderGenreChips();
-    updateActiveCount();
+    state.voteMin = ''; state.budgetMin = ''; state.revenueMin = '';
+    state.company = ''; state.network = ''; state.cert = '';
+    state.releasedOnly = false;
+    if (clearDisplay) { state.hideSaved = false; state.posterOnly = false; }
+    syncFilterInputs();
     savePrefs();
 }
 
@@ -2255,6 +2556,19 @@ function readFilterInputs() {
     state.runtime = $('runtimeFilter').value;
     state.yearFrom = $('yearFrom').value;
     state.yearTo = $('yearTo').value;
+    state.voteMin = posNum($('voteMinFilter').value) ? String(Math.round(Number($('voteMinFilter').value))) : '';
+    state.budgetMin = posNum($('budgetMinFilter').value);
+    state.revenueMin = posNum($('revenueMinFilter').value);
+    state.company = $('companyFilter').value;
+    state.network = $('networkFilter').value;
+    state.cert = $('certFilter').value;
+    state.releasedOnly = $('releasedOnlyFilter').checked;
+    state.hideSaved = $('hideSavedFilter').checked;
+    state.posterOnly = $('posterOnlyFilter').checked;
+    // tidy the number boxes so they show exactly what's being used
+    $('voteMinFilter').value = state.voteMin;
+    $('budgetMinFilter').value = state.budgetMin;
+    $('revenueMinFilter').value = state.revenueMin;
     if (state.yearFrom && state.yearTo && Number(state.yearFrom) > Number(state.yearTo)) {
         const t = state.yearFrom; state.yearFrom = state.yearTo; state.yearTo = t;
         $('yearFrom').value = state.yearFrom; $('yearTo').value = state.yearTo;
@@ -2277,7 +2591,7 @@ function clearAllFilters() {
     hidePeopleSuggestions();
     clearPersonMode();
     clearAiMode();
-    resetFilterState();
+    resetFilterState(true, true);
     if (state.view === 'watchlist') switchView(state.mediaType);
     else reset();
 }
@@ -2300,6 +2614,7 @@ async function enterBrowseView(view) {
         loadHero();
         $('search').placeholder = view === 'tv' ? 'Search shows, plots or people…' : 'Search titles, plots or people…';
         if (state.personId) showPersonBanner();
+        updateActiveCount();
     }
     if (state.ai) showAiBanner();
 }
@@ -2333,15 +2648,16 @@ function applyPreset(kind) {
     resetFilterState();
     const yr = new Date().getFullYear();
     if (kind === 'trending') state.sort = 'popularity.desc';
-    if (kind === 'acclaimed') { state.sort = 'vote_average.desc'; state.rating = '8'; }
+    if (kind === 'acclaimed') { state.sort = 'vote_average.desc'; state.rating = '8'; state.voteMin = '1000'; }
     if (kind === 'thisyear') { state.yearFrom = String(yr); state.yearTo = String(yr); state.sort = 'popularity.desc'; }
     if (kind === 'hidden') { state.sort = 'vote_average.desc'; state.rating = '7'; }
     if (kind === 'classics') { state.yearTo = '1989'; state.sort = 'vote_average.desc'; state.rating = '7'; }
     if (kind === 'short') { state.runtime = '0,90'; state.sort = 'popularity.desc'; }
-    $('sort').value = state.sort;
-    $('ratingFilter').value = state.rating;
-    $('yearFrom').value = state.yearFrom; $('yearTo').value = state.yearTo;
-    $('runtimeFilter').value = state.runtime;
+    if (kind === 'blockbusters') {
+        if (state.mediaType === 'movie') { state.sort = 'revenue.desc'; state.budgetMin = '100'; }
+        else { state.sort = 'vote_count.desc'; state.voteMin = '2000'; }
+    }
+    syncFilterInputs();
     state.query = ''; $('search').value = ''; $('searchWrap').classList.remove('has-text');
     hidePeopleSuggestions();
     onFiltersChanged();
@@ -2392,13 +2708,31 @@ $('geminiSaveBtn').addEventListener('click', saveGemini);
 ['geminiKeyInput', 'geminiModelInput'].forEach(id =>
     $(id).addEventListener('keydown', e => { if (e.key === 'Enter') saveGemini(); }));
 
-['sort', 'ratingFilter', 'langFilter', 'providerFilter', 'monetizationFilter', 'runtimeFilter', 'yearFrom', 'yearTo']
+['sort', 'ratingFilter', 'langFilter', 'providerFilter', 'monetizationFilter', 'runtimeFilter', 'yearFrom', 'yearTo',
+ 'companyFilter', 'networkFilter', 'certFilter', 'releasedOnlyFilter', 'hideSavedFilter', 'posterOnlyFilter']
     .forEach(id => $(id).addEventListener('change', () => { readFilterInputs(); onFiltersChanged(); }));
+
+// Number boxes: apply on Enter / leaving the box, or after you stop typing.
+['voteMinFilter', 'budgetMinFilter', 'revenueMinFilter'].forEach(id => {
+    const el = $(id);
+    let last = el.value;
+    const apply = () => {
+        if (el.value === last) return;
+        last = el.value;
+        readFilterInputs();
+        last = el.value;
+        onFiltersChanged();
+    };
+    const debounced = debounce(apply, 900);
+    el.addEventListener('input', debounced);
+    el.addEventListener('change', apply);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); apply(); } });
+});
 
 $('regionFilter').addEventListener('change', async e => {
     state.region = e.target.value;
     store.set('tmdb_region', state.region);
-    await populateProviders();
+    await Promise.all([populateProviders(), populateCerts()]);
     onFiltersChanged();
 });
 
@@ -2517,6 +2851,10 @@ document.addEventListener('click', e => {
             openDetails(pick.id, pick.__type || state.mediaType);
             break;
         }
+        case 'load-more':
+            grid.querySelectorAll('.state-box').forEach(el => el.remove());
+            load();
+            break;
         case 'exit-person': clearPersonMode(); reset(); break;
         case 'retry': reset(); break;
         case 'go-browse': switchView(state.mediaType); break;
